@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}English Learning{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --info-color: #4895ef;
+            --warning-color: #f72585;
+            --danger-color: #ff4d6d;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f5f7fa;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-content {
+            flex: 1;
+        }
+        
+        /* Header & Nav */
+        .navbar {
+            background: linear-gradient(to right, #4361ee, #3a0ca3);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .nav-link {
+            position: relative;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: white;
+            transition: width 0.3s;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        /* Cards */
+        .card {
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 600;
+            border: none;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        /* Notification badge */
+        .badge-notify {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.6rem;
+        }
+        
+        /* Avatar */
+        .avatar {
+            border-radius: 50%;
+            border: 2px solid white;
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 90px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: #fff;
+        }
+
+        /* Responsive sidebar */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: static;
+                padding-top: 15px;
+                box-shadow: none;
+            }
+        }
+
+        /* Courses */
+        .course-card {
+            height: 100%;
+        }
+        
+        .course-image {
+            height: 180px;
+            object-fit: cover;
+        }
+        
+        /* Progress */
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+        }
+        
+        /* Badges */
+        .badge-item {
+            transition: all 0.3s;
+        }
+        
+        .badge-item:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Forum */
+        .forum-post {
+            transition: all 0.3s;
+        }
+        
+        .forum-post:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* Footer */
+        footer {
+            background: linear-gradient(to right, #4361ee, #3a0ca3);
+            color: white;
+        }
+        
+        /* Chat */
+        .chat-container {
+            height: 60vh;
+            overflow-y: auto;
+        }
+        
+        .message-bubble {
+            border-radius: 20px;
+            padding: 10px 15px;
+            max-width: 80%;
+            margin-bottom: 10px;
+        }
+        
+        .message-sent {
+            background-color: var(--primary-color);
+            color: white;
+            margin-left: auto;
+        }
+        
+        .message-received {
+            background-color: #e9ecef;
+            color: #333;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        /* Flash messages */
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        /* Forms */
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+        
+        /* Custom utilities */
+        .rounded-custom {
+            border-radius: 15px;
+        }
+        
+        .shadow-custom {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Dark Mode Toggle */
+        .dark-mode {
+            background-color: #1a1a2e;
+            color: #f8f9fa;
+        }
+        
+        .dark-mode .card {
+            background-color: #16213e;
+            color: #f8f9fa;
+        }
+        
+        .dark-mode .sidebar {
+            background-color: #16213e;
+        }
+        
+        /* Lessons */
+        .lesson-list-item {
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .lesson-list-item:hover, .lesson-list-item.active {
+            border-left: 3px solid var(--primary-color);
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        /* Test styles */
+        .question-card {
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        /* Loading spinner */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    VietEnglish
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        {% if current_user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link text-light" href="{{ url_for('dashboard') }}">
+                                    <i class="fas fa-tachometer-alt me-1"></i> Bảng điều khiển
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-light" href="{{ url_for('courses') }}">
+                                    <i class="fas fa-book me-1"></i> Khóa học
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-light" href="{{ url_for('forums') }}">
+                                    <i class="fas fa-comments me-1"></i> Diễn đàn
+                                </a>
+                            </li>
+                            {% if current_user.role == 'teacher' or current_user.role == 'admin' %}
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-light" href="#" id="teacherDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-chalkboard-teacher me-1"></i> Giáo viên
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="teacherDropdown">
+                                        <li><a class="dropdown-item" href="{{ url_for('teacher_dashboard') }}">Bảng điều khiển</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('teacher_courses') }}">Khóa học của tôi</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('teacher_tests') }}">Bài kiểm tra</a></li>
+                                    </ul>
+                                </li>
+                            {% endif %}
+                            {% if current_user.role == 'admin' %}
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-light" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-user-shield me-1"></i> Quản trị
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                        <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}">Bảng điều khiển</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin_users') }}">Người dùng</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin_courses') }}">Khóa học</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin_tests') }}">Bài kiểm tra</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin_forum_categories') }}">Diễn đàn</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin_badges') }}">Huy hiệu</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('admin_reports') }}">Báo cáo</a></li>
+                                    </ul>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link text-light" href="{{ url_for('index') }}">
+                                    <i class="fas fa-home me-1"></i> Trang chủ
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <ul class="navbar-nav ms-auto">
+                        {% if current_user.is_authenticated %}
+                            <li class="nav-item position-relative me-3">
+                                <a class="nav-link text-light" href="{{ url_for('notifications') }}">
+                                    <i class="fas fa-bell"></i>
+                                    {% if get_unread_notifications_count() > 0 %}
+                                        <span class="badge bg-danger badge-notify">{{ get_unread_notifications_count() }}</span>
+                                    {% endif %}
+                                </a>
+                            </li>
+                            <li class="nav-item me-3">
+                                <a class="nav-link text-light" href="{{ url_for('chat_rooms') }}">
+                                    <i class="fas fa-comment-dots"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-light d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" alt="Avatar" class="avatar me-2">
+                                    {{ current_user.username }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="fas fa-user me-2"></i>Hồ sơ</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('leaderboard') }}"><i class="fas fa-trophy me-2"></i>Bảng xếp hạng</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('user_statistics') }}"><i class="fas fa-chart-line me-2"></i>Thống kê</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('badges') }}"><i class="fas fa-award me-2"></i>Huy hiệu</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item me-2">
+                                <a class="nav-link text-light" href="{{ url_for('login') }}">
+                                    <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-light" href="{{ url_for('register') }}">
+                                    <i class="fas fa-user-plus me-1"></i> Đăng ký
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show animate-fade-in" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-3">VietEnglish</h5>
+                    <p>Nền tảng học tiếng Anh thông minh với trợ lý AI</p>
+                    <div class="d-flex">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-3">Liên kết nhanh</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{{ url_for('index') }}" class="text-white text-decoration-none">Trang chủ</a></li>
+                        <li class="mb-2"><a href="{{ url_for('courses') }}" class="text-white text-decoration-none">Khóa học</a></li>
+                        <li class="mb-2"><a href="{{ url_for('forums') }}" class="text-white text-decoration-none">Diễn đàn</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Trợ giúp</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-3">Liên hệ</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> 123 Đường ABC, Quận XYZ, TP.HCM</li>
+                        <li class="mb-2"><i class="fas fa-phone me-2"></i> (0123) 456 789</li>
+                        <li><i class="fas fa-envelope me-2"></i> support@vietenglish.com</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4 bg-light">
+            <div class="text-center">
+                <p class="mb-0">&copy; {{ current_year }} VietEnglish. Bản quyền thuộc về công ty TNHH VietEnglish.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Spinner -->
+    <div class="spinner-overlay d-none" id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Common JavaScript -->
+    <script>
+        // Loading spinner
+        function showLoading() {
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingSpinner').classList.add('d-none');
+        }
+        
+        // Form submission with loading
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form.needs-validation');
+            
+            forms.forEach(form => {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    } else {
+                        showLoading();
+                    }
+                    
+                    form.classList.add('was-validated');
+                });
+            });
+
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+        
+        // Dark Mode Toggle (example)
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            
+            // Save preference in localStorage
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+        
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

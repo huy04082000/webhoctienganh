@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+{% from "macros.html" import course_card, test_card, notification_item %}
+
+{% block title %}Bảng điều khiển - VietEnglish{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="mb-0">
+                <i class="fas fa-tachometer-alt me-2 text-primary"></i>Bảng điều khiển
+            </h1>
+            <p class="lead text-muted mt-2">Xin chào, {{ current_user.fullname }}!</p>
+        </div>
+        
+        {% if not user_profile.language_level %}
+            <div class="col-lg-4 text-end">
+                <a href="{{ url_for('placement_test') }}" class="btn btn-primary">
+                    <i class="fas fa-clipboard-list me-1"></i> Bài kiểm tra xếp loại
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Progress Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Trình độ hiện tại</h5>
+                        <i class="fas fa-graduation-cap fs-4 text-primary"></i>
+                    </div>
+                    
+                    {% if user_profile.language_level %}
+                        <div class="text-center my-4">
+                            <div class="display-4 fw-bold">{{ user_profile.language_level }}</div>
+                            <p class="text-muted">Dựa trên bài kiểm tra gần nhất</p>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <a href="{{ url_for('placement_test') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-redo me-1"></i> Kiểm tra lại
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center my-4">
+                            <p class="mb-3">Bạn chưa làm bài kiểm tra xếp loại</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('placement_test') }}" class="btn btn-primary">
+                                    <i class="fas fa-clipboard-list me-1"></i> Bắt đầu kiểm tra
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Thống kê học tập</h5>
+                        <i class="fas fa-chart-line fs-4 text-info"></i>
+                    </div>
+                    
+                    {% if user_profile %}
+                        <div class="row text-center my-4">
+                            <div class="col-6">
+                                <div class="display-5 fw-bold text-primary">{{ user_profile.total_points }}</div>
+                                <p class="text-muted">Tổng điểm</p>
+                            </div>
+                            <div class="col-6">
+                                <div class="display-5 fw-bold text-success">{{ user_profile.study_streak }}</div>
+                                <p class="text-muted">Ngày liên tiếp</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-center my-4">Chưa có dữ liệu thống kê</p>
+                    {% endif %}
+                    
+                    <div class="d-grid">
+                        <a href="{{ url_for('user_statistics') }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-bar me-1"></i> Chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Lịch học</h5>
+                        <i class="fas fa-calendar-alt fs-4 text-warning"></i>
+                    </div>
+                    
+                    {% if courses %}
+                        <div class="mt-3">
+                            <ul class="list-group list-group-flush">
+                                {% for course in courses[:3] %}
+                                    <li class="list-group-item border-0 px-0">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <i class="fas fa-book text-primary me-2"></i>
+                                                {{ course.title|truncate(30) }}
+                                            </span>
+                                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        
+                        {% if courses|length > 3 %}
+                            <div class="d-grid mt-3">
+                                <a href="{{ url_for('courses') }}" class="btn btn-outline-warning">
+                                    Xem tất cả khóa học
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center my-4">
+                            <p class="mb-3">Bạn chưa đăng ký khóa học nào</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('courses') }}" class="btn btn-primary">
+                                    <i class="fas fa-book me-1"></i> Khám phá khóa học
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Khóa học đang học -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-book-open me-2 text-primary"></i>Khóa học của tôi</h5>
+                        <a href="{{ url_for('courses') }}" class="btn btn-sm btn-outline-primary">Tất cả khóa học</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if courses %}
+                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                            {% for course in courses[:4] %}
+                                <div class="col">
+                                    {{ course_card(course, enrolled=True) }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-book-open text-muted" style="font-size: 4rem;"></i>
+                            <p class="mt-3">Bạn chưa đăng ký khóa học nào.</p>
+                            <a href="{{ url_for('courses') }}" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i> Khám phá khóa học
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Bài kiểm tra gần đây -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-clipboard-list me-2 text-info"></i>Bài kiểm tra gần đây</h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_tests %}
+                        <div class="row">
+                            {% for test_result in recent_tests[:2] %}
+                                <div class="col-md-6 mb-3">
+                                    {{ test_card(test_result.test, has_result=True, result=test_result) }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-clipboard-check text-muted" style="font-size: 4rem;"></i>
+                            <p class="mt-3">Bạn chưa làm bài kiểm tra nào.</p>
+                            <a href="{{ url_for('placement_test') }}" class="btn btn-info">
+                                <i class="fas fa-clipboard-list me-1"></i> Làm bài kiểm tra xếp loại
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Gợi ý khóa học -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2 text-warning"></i>Gợi ý cho bạn</h5>
+                </div>
+                <div class="card-body">
+                    {% if recommended_courses %}
+                        {% for course in recommended_courses[:2] %}
+                            <div class="mb-3">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="row g-0">
+                                        <div class="col-4">
+                                            <img src="{{ url_for('static', filename='uploads/' + course.image) }}" 
+                                                class="img-fluid h-100" style="object-fit: cover;" alt="{{ course.title }}">
+                                        </div>
+                                        <div class="col-8">
+                                            <div class="card-body py-2">
+                                                <span class="badge bg-primary mb-1">{{ course.level }}</span>
+                                                <h6 class="card-title mb-1">{{ course.title|truncate(40) }}</h6>
+                                                <p class="card-text small mb-2">{{ course.description|truncate(60) }}</p>
+                                                <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('courses') }}" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-th-list me-1"></i> Xem thêm
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <p>Chưa có khóa học được gợi ý.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Thông báo -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bell me-2 text-danger"></i>Thông báo
+                            {% if get_unread_notifications_count() > 0 %}
+                                <span class="badge bg-danger ms-2">{{ get_unread_notifications_count() }}</span>
+                            {% endif %}
+                        </h5>
+                        <a href="{{ url_for('notifications') }}" class="btn btn-sm btn-outline-secondary">Tất cả</a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if notifications %}
+                        <div class="notification-list">
+                            {% for notification in notifications %}
+                                {{ notification_item(notification) }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell-slash text-muted" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Không có thông báo mới.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Mục tiêu học tập -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-bullseye me-2 text-success"></i>Mục tiêu học tập</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_profile and user_profile.learning_goals %}
+                        <p>{{ user_profile.learning_goals }}</p>
+                        <a href="{{ url_for('profile') }}" class="btn btn-sm btn-outline-success">Cập nhật mục tiêu</a>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <p>Bạn chưa đặt mục tiêu học tập.</p>
+                            <a href="{{ url_for('profile') }}" class="btn btn-success">
+                                <i class="fas fa-plus-circle me-1"></i> Thêm mục tiêu
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Hiệu ứng cho thẻ card khi hover
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
+{% endblock %}

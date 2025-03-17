@@ -1,0 +1,812 @@
+{% extends "base.html" %}
+
+{% block title %}{{ test.title }} - VietEnglish{% endblock %}
+
+{% block extra_css %}
+<style>
+    .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .test-header {
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    
+    .timer-container {
+        position: sticky;
+        top: 80px;
+        z-index: 100;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        margin-bottom: 30px;
+    }
+    
+    .timer {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+    
+    .timer.warning {
+        color: var(--warning-color);
+    }
+    
+    .timer.danger {
+        color: var(--danger-color);
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+    
+    .progress-container {
+        margin-bottom: 15px;
+    }
+    
+    .test-progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    
+    .question-card {
+        margin-bottom: 30px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        border: none;
+        transition: all 0.3s;
+    }
+    
+    .question-card:hover {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .question-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eee;
+        padding: 15px 20px;
+    }
+    
+    .question-type {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .question-type.multiple_choice {
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary-color);
+    }
+    
+    .question-type.writing {
+        background-color: rgba(76, 201, 240, 0.1);
+        color: var(--success-color);
+    }
+    
+    .question-type.listening {
+        background-color: rgba(247, 37, 133, 0.1);
+        color: var(--warning-color);
+    }
+    
+    .question-type.speaking {
+        background-color: rgba(58, 12, 163, 0.1);
+        color: var(--secondary-color);
+    }
+    
+    .question-type.grammar {
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary-color);
+    }
+    
+    .question-type.vocabulary {
+        background-color: rgba(76, 201, 240, 0.1);
+        color: var(--success-color);
+    }
+    
+    .question-type.reading {
+        background-color: rgba(247, 37, 133, 0.1);
+        color: var(--warning-color);
+    }
+    
+    .question-type.cloze {
+        background-color: rgba(58, 12, 163, 0.1);
+        color: var(--secondary-color);
+    }
+    
+    .question-number {
+        font-weight: 700;
+        color: #555;
+    }
+    
+    .question-difficulty {
+        float: right;
+        font-size: 0.9rem;
+    }
+    
+    .question-content {
+        padding: 20px;
+    }
+    
+    .option-item {
+        display: block;
+        padding: 15px;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .option-item:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+        border-color: var(--primary-color);
+    }
+    
+    .option-item.selected {
+        background-color: rgba(67, 97, 238, 0.1);
+        border-color: var(--primary-color);
+    }
+    
+    .reading-passage {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-left: 3px solid var(--primary-color);
+    }
+    
+    .audio-player {
+        width: 100%;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .btn-voice-record {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        transition: all 0.3s;
+        margin: 0 auto;
+    }
+    
+    .btn-voice-record:hover {
+        background-color: var(--secondary-color);
+        transform: scale(1.05);
+    }
+    
+    .btn-voice-record.recording {
+        animation: pulse 1.5s infinite;
+    }
+    
+    .hidden-form-element {
+        display: none;
+    }
+    
+    .pagination-dots {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+    
+    .pagination-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #ddd;
+        margin: 0 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .pagination-dot.active {
+        background-color: var(--primary-color);
+        transform: scale(1.2);
+    }
+    
+    .pagination-dot.answered {
+        background-color: var(--success-color);
+    }
+    
+    /* Time's up modal */
+    .times-up-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s;
+    }
+    
+    .times-up-modal.show {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .times-up-content {
+        background-color: white;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        transform: translateY(30px);
+        transition: all 0.3s;
+    }
+    
+    .times-up-modal.show .times-up-content {
+        transform: translateY(0);
+    }
+    
+    .times-up-icon {
+        font-size: 4rem;
+        color: var(--warning-color);
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Test Header -->
+<section class="test-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1 class="mb-3">{{ test.title }}</h1>
+                <p class="lead mb-0">{{ test.description }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container test-container mb-5">
+    <!-- Timer and Progress -->
+    <div class="timer-container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="timer" id="timer">
+                    <i class="far fa-clock me-2"></i><span id="minutes">{{ time_limit // 60 }}</span>:<span id="seconds">00</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="progress-container">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Tiến độ</span>
+                        <span id="progress-text">0%</span>
+                    </div>
+                    <div class="progress test-progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 0%" 
+                             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Test Form -->
+    <form id="testForm" action="{{ url_for('submit_test', test_id=test.id) }}" method="post">
+        <input type="hidden" name="time_spent" id="timeSpent" value="0">
+        
+        <!-- Questions Container -->
+        <div id="questionsContainer">
+            {% for question in questions %}
+                <div class="question-card" id="question-{{ loop.index }}" {% if loop.index > 1 %}style="display: none;"{% endif %}>
+                    <div class="question-header">
+                        <div class="question-type {{ question.type }}">{{ question.type }}</div>
+                        <span class="question-number">Câu hỏi {{ loop.index }}/{{ questions|length }}</span>
+                        {% if question.difficulty %}
+                            <span class="question-difficulty">Độ khó: {{ question.difficulty }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="question-content">
+                        {% if question.type == 'reading' and question.text %}
+                            <div class="reading-passage mb-4">
+                                {{ question.text }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if question.type == 'listening' and question.audio_url %}
+                            <div class="mb-4">
+                                <audio controls class="audio-player">
+                                    <source src="{{ question.audio_url }}" type="audio/mpeg">
+                                    Trình duyệt của bạn không hỗ trợ phát audio.
+                                </audio>
+                            </div>
+                        {% endif %}
+                        
+                        <h5 class="mb-4">{{ question.question }}</h5>
+                        
+                        {% if question.type == 'multiple_choice' or question.type == 'grammar' or 
+                               question.type == 'vocabulary' or question.type == 'reading' or question.type == 'cloze' or
+                               question.type == 'listening' %}
+                            <div class="options-container">
+                                {% for option in question.options %}
+                                    <label class="option-item" for="option_{{ question.id }}_{{ loop.index0 }}">
+                                        <div class="d-flex align-items-center">
+                                            <input type="radio" name="answer_{{ question.id }}" 
+                                                   id="option_{{ question.id }}_{{ loop.index0 }}" 
+                                                   value="{{ option }}" class="hidden-form-element answer-input">
+                                            <div class="me-3">
+                                                <div class="btn btn-outline-primary btn-sm rounded-circle option-circle">
+                                                    {{ ["A", "B", "C", "D"][loop.index0] }}
+                                                </div>
+                                            </div>
+                                            <div>{{ option }}</div>
+                                        </div>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Hidden field for score (will be calculated in frontend for demo) -->
+                            <input type="hidden" name="score_{{ question.id }}" id="score_{{ question.id }}" value="0">
+                            
+                        {% elif question.type == 'writing' %}
+                            <div class="mb-4">
+                                <textarea class="form-control answer-input" name="answer_{{ question.id }}" rows="8" 
+                                          placeholder="Viết câu trả lời của bạn ở đây..."></textarea>
+                            </div>
+                            
+                            <input type="hidden" name="score_{{ question.id }}" id="score_{{ question.id }}" value="0">
+                            
+                        {% elif question.type == 'speaking' %}
+                            <div class="text-center mb-4">
+                                <p class="mb-3">Nhấn nút để bắt đầu ghi âm câu trả lời của bạn:</p>
+                                <button type="button" class="btn-voice-record mb-3" data-question-id="{{ question.id }}">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <p id="record_status_{{ question.id }}" class="mb-0">Nhấn để bắt đầu ghi âm</p>
+                                
+                                <div class="mt-4" id="record_controls_{{ question.id }}" style="display: none;">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-2" id="listen_button_{{ question.id }}">
+                                        <i class="fas fa-volume-up me-1"></i> Nghe lại
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" id="rerecord_button_{{ question.id }}">
+                                        <i class="fas fa-redo me-1"></i> Ghi âm lại
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" name="answer_{{ question.id }}" id="answer_{{ question.id }}" value="">
+                            <input type="hidden" name="score_{{ question.id }}" id="score_{{ question.id }}" value="0">
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination Dots -->
+        <div class="pagination-dots mb-4" id="paginationDots">
+            {% for question in questions %}
+                <div class="pagination-dot {% if loop.index == 1 %}active{% endif %}" data-question="{{ loop.index }}"></div>
+            {% endfor %}
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between mb-5">
+            <button type="button" class="btn btn-outline-primary" id="prevButton" disabled>
+                <i class="fas fa-chevron-left me-1"></i> Câu trước
+            </button>
+            
+            <button type="button" class="btn btn-outline-primary" id="nextButton">
+                Câu tiếp theo <i class="fas fa-chevron-right ms-1"></i>
+            </button>
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="d-grid gap-2">
+            <button type="button" class="btn btn-primary btn-lg" id="submitButton">
+                <i class="fas fa-paper-plane me-2"></i> Nộp bài
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Submission Confirmation Modal -->
+<div class="modal fade" id="submitConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận nộp bài</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn nộp bài?</p>
+                <div class="alert alert-warning">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-exclamation-triangle fs-4"></i>
+                        </div>
+                        <div>
+                            <p class="mb-0"><span id="unansweredCount">0</span> câu hỏi chưa được trả lời.</p>
+                            <p class="mb-0">Bạn không thể quay lại sau khi nộp bài.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Quay lại làm bài</button>
+                <button type="button" class="btn btn-primary" id="confirmSubmit">Nộp bài</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Time's Up Modal -->
+<div class="times-up-modal" id="timesUpModal">
+    <div class="times-up-content">
+        <div class="times-up-icon">
+            <i class="fas fa-hourglass-end"></i>
+        </div>
+        <h2 class="mb-3">Hết giờ!</h2>
+        <p class="mb-4">Thời gian làm bài đã kết thúc. Bài làm của bạn sẽ được tự động nộp.</p>
+        <button type="button" class="btn btn-primary btn-lg" id="timesUpSubmit">
+            <i class="fas fa-paper-plane me-2"></i> Nộp bài ngay
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Timer functionality
+        const timerElement = document.getElementById('timer');
+        const minutesElement = document.getElementById('minutes');
+        const secondsElement = document.getElementById('seconds');
+        const timeSpentInput = document.getElementById('timeSpent');
+        const timesUpModal = document.getElementById('timesUpModal');
+        const timesUpSubmit = document.getElementById('timesUpSubmit');
+        
+        let totalSeconds = {{ time_limit }};
+        let elapsedSeconds = 0;
+        let timerInterval;
+        
+        function startTimer() {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+        
+        function updateTimer() {
+            totalSeconds--;
+            elapsedSeconds++;
+            
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            minutesElement.textContent = String(minutes).padStart(2, '0');
+            secondsElement.textContent = String(seconds).padStart(2, '0');
+            
+            // Update time spent
+            timeSpentInput.value = elapsedSeconds;
+            
+            // Change timer color based on remaining time
+            if (totalSeconds <= 300 && totalSeconds > 60) {
+                timerElement.classList.add('warning');
+            } else if (totalSeconds <= 60) {
+                timerElement.classList.remove('warning');
+                timerElement.classList.add('danger');
+            }
+            
+            // Time's up
+            if (totalSeconds <= 0) {
+                clearInterval(timerInterval);
+                showTimesUpModal();
+            }
+        }
+        
+        function showTimesUpModal() {
+            timesUpModal.classList.add('show');
+        }
+        
+        // Start timer when page loads
+        startTimer();
+        
+        // Question navigation
+        const questionsContainer = document.getElementById('questionsContainer');
+        const questions = questionsContainer.querySelectorAll('.question-card');
+        const paginationDots = document.querySelectorAll('.pagination-dot');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        
+        let currentQuestion = 1;
+        let totalQuestions = questions.length;
+        
+        function showQuestion(questionNumber) {
+            // Hide all questions
+            questions.forEach(question => {
+                question.style.display = 'none';
+            });
+            
+            // Show current question
+            questions[questionNumber - 1].style.display = 'block';
+            
+            // Update pagination dots
+            paginationDots.forEach(dot => {
+                dot.classList.remove('active');
+            });
+            paginationDots[questionNumber - 1].classList.add('active');
+            
+            // Update navigation buttons
+            prevButton.disabled = questionNumber === 1;
+            nextButton.textContent = questionNumber === totalQuestions ? 'Nộp bài' : 'Câu tiếp theo';
+            nextButton.innerHTML = questionNumber === totalQuestions ? 
+                                   '<i class="fas fa-paper-plane me-1"></i> Nộp bài' : 
+                                   'Câu tiếp theo <i class="fas fa-chevron-right ms-1"></i>';
+            
+            // Update current question
+            currentQuestion = questionNumber;
+        }
+        
+        function updateProgress() {
+            // Count answered questions
+            let answeredCount = 0;
+            questions.forEach((question, index) => {
+                const questionId = question.id.split('-')[1];
+                const answerInputs = question.querySelectorAll('.answer-input');
+                
+                // Check if any radio button is checked or text is entered
+                let isAnswered = false;
+                
+                answerInputs.forEach(input => {
+                    if ((input.type === 'radio' && input.checked) || 
+                        (input.type === 'textarea' && input.value.trim() !== '') ||
+                        (input.type === 'hidden' && input.id.startsWith('answer_') && input.value !== '')) {
+                        isAnswered = true;
+                    }
+                });
+                
+                if (isAnswered) {
+                    answeredCount++;
+                    paginationDots[index].classList.add('answered');
+                } else {
+                    paginationDots[index].classList.remove('answered');
+                }
+            });
+            
+            // Update progress bar
+            const progress = Math.round((answeredCount / totalQuestions) * 100);
+            progressBar.style.width = `${progress}%`;
+            progressBar.setAttribute('aria-valuenow', progress);
+            progressText.textContent = `${progress}%`;
+            
+            return answeredCount;
+        }
+        
+        // Event listeners for navigation
+        prevButton.addEventListener('click', function() {
+            if (currentQuestion > 1) {
+                showQuestion(currentQuestion - 1);
+            }
+        });
+        
+        nextButton.addEventListener('click', function() {
+            if (currentQuestion < totalQuestions) {
+                showQuestion(currentQuestion + 1);
+            } else {
+                // If on last question, show submission confirmation
+                showSubmitConfirmation();
+            }
+        });
+        
+        // Pagination dots
+        paginationDots.forEach(dot => {
+            dot.addEventListener('click', function() {
+                const questionNumber = parseInt(this.getAttribute('data-question'));
+                showQuestion(questionNumber);
+            });
+        });
+        
+        // Option selection
+        const optionItems = document.querySelectorAll('.option-item');
+        optionItems.forEach(item => {
+            item.addEventListener('click', function() {
+                // Get the radio input inside this option
+                const radio = this.querySelector('input[type="radio"]');
+                
+                // Check the radio
+                radio.checked = true;
+                
+                // Remove selected class from all options in this question
+                const questionCard = this.closest('.question-card');
+                questionCard.querySelectorAll('.option-item').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selected class to this option
+                this.classList.add('selected');
+                
+                // Set score for this question (for demo: 1.0 means correct)
+                const questionId = questionCard.id.split('-')[1];
+                
+                // Simulate scoring (in a real app, this would be done server-side)
+                // For demo: randomly give 0-1 points
+                const score = Math.random().toFixed(1); // Random score between 0 and 1
+                document.getElementById(`score_${questionId}`).value = score;
+                
+                // Update progress
+                updateProgress();
+            });
+        });
+        
+        // Speaking questions
+        const recordButtons = document.querySelectorAll('.btn-voice-record');
+        recordButtons.forEach(button => {
+            const questionId = button.getAttribute('data-question-id');
+            const statusElement = document.getElementById(`record_status_${questionId}`);
+            const controlsElement = document.getElementById(`record_controls_${questionId}`);
+            const listenButton = document.getElementById(`listen_button_${questionId}`);
+            const rerecordButton = document.getElementById(`rerecord_button_${questionId}`);
+            const answerInput = document.getElementById(`answer_${questionId}`);
+            const scoreInput = document.getElementById(`score_${questionId}`);
+            
+            let isRecording = false;
+            let recordingTimer;
+            let recordingSeconds = 0;
+            
+            button.addEventListener('click', function() {
+                if (!isRecording) {
+                    // Start recording
+                    startRecording();
+                } else {
+                    // Stop recording
+                    stopRecording();
+                }
+            });
+            
+            function startRecording() {
+                isRecording = true;
+                button.classList.add('recording');
+                statusElement.textContent = 'Đang ghi âm... (0:00)';
+                recordingSeconds = 0;
+                
+                recordingTimer = setInterval(() => {
+                    recordingSeconds++;
+                    const minutes = Math.floor(recordingSeconds / 60);
+                    const seconds = recordingSeconds % 60;
+                    statusElement.textContent = `Đang ghi âm... (${minutes}:${seconds < 10 ? '0' : ''}${seconds})`;
+                    
+                    // Auto stop after 30 seconds
+                    if (recordingSeconds >= 30) {
+                        stopRecording();
+                    }
+                }, 1000);
+            }
+            
+            function stopRecording() {
+                isRecording = false;
+                clearInterval(recordingTimer);
+                button.classList.remove('recording');
+                statusElement.textContent = 'Ghi âm hoàn tất!';
+                controlsElement.style.display = 'block';
+                
+                // Simulate answer for speaking question (a base64 audio blob in a real app)
+                answerInput.value = `speaking_recording_${questionId}_${Date.now()}`;
+                
+                // Simulate score (for demo: random score)
+                scoreInput.value = (Math.random() * (1.0 - 0.5) + 0.5).toFixed(1); // Random score between 0.5 and 1.0
+                
+                // Update progress
+                updateProgress();
+            }
+            
+            // Listen button
+            listenButton.addEventListener('click', function() {
+                statusElement.textContent = 'Đang phát bản ghi...';
+                
+                // Simulate playback
+                setTimeout(() => {
+                    statusElement.textContent = 'Ghi âm hoàn tất!';
+                }, 3000);
+            });
+            
+            // Re-record button
+            rerecordButton.addEventListener('click', function() {
+                controlsElement.style.display = 'none';
+                answerInput.value = '';
+                scoreInput.value = '0';
+                statusElement.textContent = 'Nhấn để bắt đầu ghi âm';
+                
+                // Update progress
+                updateProgress();
+            });
+        });
+        
+        // Text inputs (for writing questions)
+        const textareas = document.querySelectorAll('textarea.answer-input');
+        textareas.forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                const questionCard = this.closest('.question-card');
+                const questionId = questionCard.id.split('-')[1];
+                
+                // Simulate scoring based on length (in a real app, this would be done server-side)
+                // For demo: longer answers get better scores
+                const length = this.value.trim().length;
+                let score = 0;
+                
+                if (length > 200) {
+                    score = (Math.random() * (1.0 - 0.8) + 0.8).toFixed(1); // 0.8-1.0
+                } else if (length > 100) {
+                    score = (Math.random() * (0.8 - 0.6) + 0.6).toFixed(1); // 0.6-0.8
+                } else if (length > 50) {
+                    score = (Math.random() * (0.6 - 0.4) + 0.4).toFixed(1); // 0.4-0.6
+                } else if (length > 0) {
+                    score = (Math.random() * (0.4 - 0.1) + 0.1).toFixed(1); // 0.1-0.4
+                }
+                
+                document.getElementById(`score_${questionId}`).value = score;
+                
+                // Update progress if there's any text
+                if (length > 0) {
+                    updateProgress();
+                }
+            });
+        });
+        
+        // Submit button
+        const submitButton = document.getElementById('submitButton');
+        const submitConfirmModal = new bootstrap.Modal(document.getElementById('submitConfirmModal'));
+        const unansweredCount = document.getElementById('unansweredCount');
+        const confirmSubmit = document.getElementById('confirmSubmit');
+        const testForm = document.getElementById('testForm');
+        
+        function showSubmitConfirmation() {
+            // Count unanswered questions
+            const answered = updateProgress();
+            const unanswered = totalQuestions - answered;
+            
+            unansweredCount.textContent = unanswered;
+            
+            // Show modal
+            submitConfirmModal.show();
+        }
+        
+        submitButton.addEventListener('click', showSubmitConfirmation);
+        
+        // Confirm submit
+        confirmSubmit.addEventListener('click', function() {
+            testForm.submit();
+        });
+        
+        // Time's up submit
+        timesUpSubmit.addEventListener('click', function() {
+            testForm.submit();
+        });
+        
+        // Initialize progress
+        updateProgress();
+    });
+</script>
+{% endblock %}

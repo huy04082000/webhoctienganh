@@ -1,0 +1,744 @@
+{% extends "base.html" %}
+{% from "macros.html" import course_card %}
+
+{% block title %}Kết quả bài kiểm tra - VietEnglish{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-header {
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    
+    .score-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .score-text {
+        font-size: 3rem;
+        font-weight: 700;
+    }
+    
+    .level-badge {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-weight: 500;
+        display: inline-block;
+        margin-bottom: 15px;
+    }
+    
+    .metric-card {
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+        height: 100%;
+        border: none;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .skill-metric {
+        margin-bottom: 15px;
+    }
+    
+    .skill-metric .progress {
+        height: 8px;
+        border-radius: 4px;
+        margin-top: 8px;
+    }
+    
+    .strength-item, .weakness-item, .recommendation-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+    }
+    
+    .strength-item:hover, .weakness-item:hover, .recommendation-item:hover {
+        transform: translateX(5px);
+    }
+    
+    .strength-item {
+        border-left: 3px solid var(--success-color);
+    }
+    
+    .weakness-item {
+        border-left: 3px solid var(--danger-color);
+    }
+    
+    .recommendation-item {
+        border-left: 3px solid var(--primary-color);
+    }
+    
+    .question-card {
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        border: none;
+    }
+    
+    .question-header {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        background-color: #f8f9fa;
+    }
+    
+    .question-correct {
+        border-left: 3px solid var(--success-color);
+    }
+    
+    .question-incorrect {
+        border-left: 3px solid var(--danger-color);
+    }
+    
+    .answer-correct {
+        background-color: rgba(46, 204, 113, 0.1);
+        border-color: var(--success-color);
+    }
+    
+    .answer-incorrect {
+        background-color: rgba(231, 76, 60, 0.1);
+        border-color: var(--danger-color);
+    }
+    
+    .answer-item {
+        padding: 15px;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .share-card {
+        border-radius: 10px;
+        background: linear-gradient(to right, #4361ee, #3a0ca3);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .share-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80') center/cover;
+        opacity: 0.1;
+        z-index: 0;
+    }
+    
+    .share-card .card-body {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .social-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+    
+    .social-icon:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+    }
+    
+    .badge-level-box {
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .badge-level-box.active {
+        background-color: rgba(67, 97, 238, 0.1);
+        border: 2px solid var(--primary-color);
+    }
+    
+    .badge-level-box .icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+    }
+    
+    .section-title {
+        position: relative;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 2px;
+        width: 50px;
+        background-color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Result Header -->
+<section class="result-header">
+    <div class="container">
+        <div class="score-circle">
+            <div class="score-text">{{ result.score|round(1) }}</div>
+            <div>/ 10</div>
+        </div>
+        
+        <div class="level-badge">
+            {{ result.level_result }}
+        </div>
+        
+        <h1 class="mb-3">{{ test.title }}</h1>
+        <p class="lead mb-0">Hoàn thành: {{ result.completed_at.strftime('%d/%m/%Y %H:%M') }}</p>
+    </div>
+</section>
+
+<div class="container mb-5">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Test Overview -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-chart-bar me-2 text-primary"></i>Tổng quan</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6 col-md-3 mb-4 mb-md-0">
+                            <div class="text-center">
+                                <h5 class="mb-1">Điểm số</h5>
+                                <div class="display-6 text-primary">{{ result.score|round(1) }}</div>
+                                <small class="text-muted">điểm / 10</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3 mb-4 mb-md-0">
+                            <div class="text-center">
+                                <h5 class="mb-1">Trình độ</h5>
+                                <div class="display-6 text-success">{{ result.level_result.split(" ")[0] }}</div>
+                                <small class="text-muted">{{ result.level_result.split(" ")[1].replace('(', '').replace(')', '') }}</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3 mb-4 mb-md-0">
+                            <div class="text-center">
+                                <h5 class="mb-1">Thời gian</h5>
+                                <div class="display-6 text-info">{{ (result.time_spent / 60)|round|int }}</div>
+                                <small class="text-muted">phút</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-3">
+                            <div class="text-center">
+                                <h5 class="mb-1">Độ chính xác</h5>
+                                {% set accuracy = (result.score / 10 * 100)|round|int %}
+                                <div class="display-6 text-warning">{{ accuracy }}%</div>
+                                <small class="text-muted">câu trả lời đúng</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4 mb-md-0">
+                            <h5 class="section-title">Điểm mạnh</h5>
+                            {% if result.strengths %}
+                                {% for strength in result.strengths|sort %}
+                                    <div class="strength-item">
+                                        <i class="fas fa-check-circle text-success me-2"></i> {{ strength }}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">Không có dữ liệu điểm mạnh.</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="section-title">Điểm yếu</h5>
+                            {% if result.weaknesses %}
+                                {% for weakness in result.weaknesses|sort %}
+                                    <div class="weakness-item">
+                                        <i class="fas fa-exclamation-circle text-danger me-2"></i> {{ weakness }}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">Không có dữ liệu điểm yếu.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5 class="section-title">Kỹ năng tiếng Anh</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="skill-metric">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Nghe (Listening)</span>
+                                        <span class="text-primary">{{ (feedback.skill_scores.listening * 100)|round|int }}%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {{ feedback.skill_scores.listening * 100 }}%" 
+                                             aria-valuenow="{{ (feedback.skill_scores.listening * 100)|round|int }}" 
+                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="skill-metric">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Nói (Speaking)</span>
+                                        <span class="text-primary">{{ (feedback.skill_scores.speaking * 100)|round|int }}%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {{ feedback.skill_scores.speaking * 100 }}%" 
+                                             aria-valuenow="{{ (feedback.skill_scores.speaking * 100)|round|int }}" 
+                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="skill-metric">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Đọc (Reading)</span>
+                                        <span class="text-primary">{{ (feedback.skill_scores.reading * 100)|round|int }}%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {{ feedback.skill_scores.reading * 100 }}%" 
+                                             aria-valuenow="{{ (feedback.skill_scores.reading * 100)|round|int }}" 
+                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="skill-metric">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Viết (Writing)</span>
+                                        <span class="text-primary">{{ (feedback.skill_scores.writing * 100)|round|int }}%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {{ feedback.skill_scores.writing * 100 }}%" 
+                                             aria-valuenow="{{ (feedback.skill_scores.writing * 100)|round|int }}" 
+                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="skill-metric">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Từ vựng (Vocabulary)</span>
+                                        <span class="text-primary">{{ (feedback.skill_scores.vocabulary * 100)|round|int }}%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {{ feedback.skill_scores.vocabulary * 100 }}%" 
+                                             aria-valuenow="{{ (feedback.skill_scores.vocabulary * 100)|round|int }}" 
+                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="skill-metric">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Ngữ pháp (Grammar)</span>
+                                        <span class="text-primary">{{ (feedback.skill_scores.grammar * 100)|round|int }}%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {{ feedback.skill_scores.grammar * 100 }}%" 
+                                             aria-valuenow="{{ (feedback.skill_scores.grammar * 100)|round|int }}" 
+                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recommendations -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-lightbulb me-2 text-warning"></i>Đề xuất cải thiện</h4>
+                </div>
+                <div class="card-body">
+                    {% if result.recommendations %}
+                        {% for recommendation in result.recommendations %}
+                            <div class="recommendation-item">
+                                <i class="fas fa-lightbulb text-warning me-2"></i> {{ recommendation }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Không có đề xuất cải thiện.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Detailed Results -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-list-ol me-2 text-primary"></i>Chi tiết kết quả</h4>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="toggleDetails">
+                        <i class="fas fa-chevron-down me-1" id="toggleIcon"></i> <span id="toggleText">Hiện chi tiết</span>
+                    </button>
+                </div>
+                <div class="card-body" id="detailsContainer" style="display: none;">
+                    {% set answers = result.answers|tojson|fromjson %}
+                    {% set questions = test.questions|tojson|fromjson %}
+                    
+                    <p class="text-muted mb-4">Dưới đây là chi tiết các câu hỏi và câu trả lời của bạn.</p>
+                    
+                    {% for answer in answers %}
+                        {% set question = questions[loop.index0] %}
+                        {% set is_correct = answer.score > 0.7 %}
+                        
+                        <div class="question-card {{ 'question-correct' if is_correct else 'question-incorrect' }}">
+                            <div class="question-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge bg-secondary me-2">Câu {{ loop.index }}</span>
+                                    <span class="badge 
+                                          {% if question.type == 'multiple_choice' %}bg-primary
+                                          {% elif question.type == 'writing' %}bg-success
+                                          {% elif question.type == 'listening' %}bg-info
+                                          {% elif question.type == 'speaking' %}bg-warning
+                                          {% else %}bg-secondary{% endif %}">
+                                        {{ question.type }}
+                                    </span>
+                                </div>
+                                <div>
+                                    {% if is_correct %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i> Đúng
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i> Sai
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="mb-3">{{ question.question }}</h5>
+                                
+                                {% if question.type == 'multiple_choice' or question.type == 'grammar' or question.type == 'vocabulary' or question.type == 'reading' or question.type == 'listening' %}
+                                    {% for option in question.options %}
+                                        {% set is_user_answer = answer.answer == option %}
+                                        {% set is_correct_answer = loop.index0 == feedback.correct_answers[loop.parent.loop.index0] %}
+                                        
+                                        <div class="answer-item 
+                                              {{ 'answer-correct' if is_correct_answer else '' }} 
+                                              {{ 'answer-incorrect' if is_user_answer and not is_correct_answer else '' }}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <div class="btn btn-sm 
+                                                          {{ 'btn-success' if is_correct_answer else '' }} 
+                                                          {{ 'btn-danger' if is_user_answer and not is_correct_answer else '' }} 
+                                                          {{ 'btn-outline-secondary' if not is_user_answer and not is_correct_answer else '' }}
+                                                          rounded-circle">
+                                                        {{ ["A", "B", "C", "D"][loop.index0] }}
+                                                    </div>
+                                                </div>
+                                                <div>{{ option }}</div>
+                                                {% if is_user_answer %}
+                                                    <div class="ms-2">
+                                                        <i class="fas fa-user text-primary"></i>
+                                                    </div>
+                                                {% endif %}
+                                                {% if is_correct_answer %}
+                                                    <div class="ms-2">
+                                                        <i class="fas fa-check-circle text-success"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% elif question.type == 'writing' %}
+                                    <div class="mb-3">
+                                        <h6>Câu trả lời của bạn:</h6>
+                                        <div class="p-3 bg-light rounded">
+                                            {{ answer.answer }}
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Phản hồi:</h6>
+                                        <div class="p-3 bg-light rounded">
+                                            {{ feedback.feedback[loop.index0] }}
+                                        </div>
+                                    </div>
+                                {% elif question.type == 'speaking' %}
+                                    <div class="mb-3 text-center">
+                                        <p>Bạn đã ghi âm một câu trả lời.</p>
+                                        <button class="btn btn-outline-primary">
+                                            <i class="fas fa-volume-up me-1"></i> Nghe lại
+                                        </button>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6>Phản hồi:</h6>
+                                        <div class="p-3 bg-light rounded">
+                                            {{ feedback.feedback[loop.index0] }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Retake Test -->
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('take_test', test_id=test.id) }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-redo me-2"></i> Làm lại bài kiểm tra
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-home me-2"></i> Quay lại bảng điều khiển
+                </a>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Language Level -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-language me-2 text-primary"></i>Trình độ tiếng Anh</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="badge-level-box {{ 'active' if result.level_result == 'Beginner (A1)' }}">
+                                <div class="icon"><i class="fas fa-seedling"></i></div>
+                                <h6>Beginner</h6>
+                                <small>A1</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="badge-level-box {{ 'active' if result.level_result == 'Elementary (A2)' }}">
+                                <div class="icon"><i class="fas fa-child"></i></div>
+                                <h6>Elementary</h6>
+                                <small>A2</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="badge-level-box {{ 'active' if result.level_result == 'Intermediate (B1)' }}">
+                                <div class="icon"><i class="fas fa-hiking"></i></div>
+                                <h6>Intermediate</h6>
+                                <small>B1</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="badge-level-box {{ 'active' if result.level_result == 'Upper Intermediate (B2)' }}">
+                                <div class="icon"><i class="fas fa-running"></i></div>
+                                <h6>Upper Inter.</h6>
+                                <small>B2</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="badge-level-box {{ 'active' if result.level_result == 'Advanced (C1)' }}">
+                                <div class="icon"><i class="fas fa-mountain"></i></div>
+                                <h6>Advanced</h6>
+                                <small>C1</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="badge-level-box {{ 'active' if result.level_result == 'Proficient (C2)' }}">
+                                <div class="icon"><i class="fas fa-flag"></i></div>
+                                <h6>Proficient</h6>
+                                <small>C2</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="btn btn-outline-primary w-100 mt-2">
+                        <i class="fas fa-info-circle me-1"></i> Tìm hiểu thêm về các cấp độ
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Recommended Courses -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-book me-2 text-success"></i>Khóa học phù hợp</h5>
+                </div>
+                <div class="card-body">
+                    {% if recommended_courses %}
+                        <p class="text-muted mb-4">Dựa trên kết quả bài kiểm tra, chúng tôi đề xuất các khóa học sau đây:</p>
+                        
+                        {% for course in recommended_courses[:2] %}
+                            <div class="mb-3">
+                                {{ course_card(course, enrolled=(course.id in enrolled_course_ids)) }}
+                            </div>
+                        {% endfor %}
+                        
+                        {% if recommended_courses|length > 2 %}
+                            <div class="d-grid">
+                                <a href="{{ url_for('courses') }}" class="btn btn-outline-success">
+                                    <i class="fas fa-th-list me-1"></i> Xem tất cả khóa học
+                                </a>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-book text-muted" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Chưa có khóa học được đề xuất.</p>
+                            <a href="{{ url_for('courses') }}" class="btn btn-success">
+                                <i class="fas fa-search me-1"></i> Tìm khóa học
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Share Results -->
+            <div class="card share-card mb-4">
+                <div class="card-body p-4 text-center">
+                    <h5 class="mb-3">Chia sẻ kết quả</h5>
+                    <p>Chia sẻ thành tích của bạn với bạn bè!</p>
+                    
+                    <div class="d-flex justify-content-center gap-3 mb-3">
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="input-group">
+                        <input type="text" class="form-control" value="{{ request.url }}" id="shareUrl" readonly>
+                        <button class="btn btn-light" type="button" id="copyShareUrl">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Next Steps -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-map-signs me-2 text-danger"></i>Bước tiếp theo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('placement_test') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-clipboard-list me-1"></i> Thử bài kiểm tra khác
+                        </a>
+                        <a href="{{ url_for('courses') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-graduation-cap me-1"></i> Khám phá khóa học
+                        </a>
+                        <a href="{{ url_for('profile') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-user me-1"></i> Cập nhật hồ sơ
+                        </a>
+                        <a href="{{ url_for('forums') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-comments me-1"></i> Thảo luận trong diễn đàn
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle details
+        const toggleDetails = document.getElementById('toggleDetails');
+        const toggleIcon = document.getElementById('toggleIcon');
+        const toggleText = document.getElementById('toggleText');
+        const detailsContainer = document.getElementById('detailsContainer');
+        
+        toggleDetails.addEventListener('click', function() {
+            if (detailsContainer.style.display === 'none') {
+                detailsContainer.style.display = 'block';
+                toggleIcon.classList.remove('fa-chevron-down');
+                toggleIcon.classList.add('fa-chevron-up');
+                toggleText.textContent = 'Ẩn chi tiết';
+            } else {
+                detailsContainer.style.display = 'none';
+                toggleIcon.classList.remove('fa-chevron-up');
+                toggleIcon.classList.add('fa-chevron-down');
+                toggleText.textContent = 'Hiện chi tiết';
+            }
+        });
+        
+        // Copy share URL
+        const copyShareUrl = document.getElementById('copyShareUrl');
+        const shareUrl = document.getElementById('shareUrl');
+        
+        if (copyShareUrl && shareUrl) {
+            copyShareUrl.addEventListener('click', function() {
+                shareUrl.select();
+                document.execCommand('copy');
+                
+                // Change button text temporarily
+                const originalHtml = copyShareUrl.innerHTML;
+                copyShareUrl.innerHTML = '<i class="fas fa-check"></i>';
+                
+                setTimeout(() => {
+                    copyShareUrl.innerHTML = originalHtml;
+                }, 2000);
+            });
+        }
+        
+        // Add fake skill scores to feedback if they don't exist
+        // This is for demo purposes only
+        if (typeof feedback === 'object' && !feedback.skill_scores) {
+            feedback.skill_scores = {
+                listening: {{ (result.score / 10 * (0.7 + (random() * 0.3)))|round(2) }},
+                speaking: {{ (result.score / 10 * (0.7 + (random() * 0.3)))|round(2) }},
+                reading: {{ (result.score / 10 * (0.7 + (random() * 0.3)))|round(2) }},
+                writing: {{ (result.score / 10 * (0.7 + (random() * 0.3)))|round(2) }},
+                vocabulary: {{ (result.score / 10 * (0.7 + (random() * 0.3)))|round(2) }},
+                grammar: {{ (result.score / 10 * (0.7 + (random() * 0.3)))|round(2) }}
+            };
+            
+            // Fake correct answers
+            feedback.correct_answers = [];
+            {% for answer in answers %}
+                // Randomly decide if the answer is correct
+                feedback.correct_answers.push({{ answer.score > 0.7 ? loop.index0 % 4 : (loop.index0 + 1) % 4 }});
+            {% endfor %}
+            
+            // Fake feedback
+            feedback.feedback = [];
+            {% for answer in answers %}
+                feedback.feedback.push("{{ answer.score > 0.7 ? 'Câu trả lời tốt!' : 'Có thể cải thiện thêm.' }}");
+            {% endfor %}
+        }
+    });
+</script>
+{% endblock %}

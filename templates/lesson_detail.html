@@ -1,0 +1,1078 @@
+{% extends "base.html" %}
+{% from "macros.html" import exercise_card %}
+
+{% block title %}{{ lesson.title }} - VietEnglish{% endblock %}
+
+{% block extra_css %}
+<style>
+    .lesson-header {
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 30px;
+    }
+    
+    .lesson-navigation {
+        position: sticky;
+        top: 80px;
+        z-index: 100;
+    }
+    
+    .lesson-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    
+    .lesson-content h2 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .lesson-content h3 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--secondary-color);
+    }
+    
+    .lesson-content p {
+        margin-bottom: 1.2rem;
+    }
+    
+    .lesson-content ul, .lesson-content ol {
+        margin-bottom: 1.2rem;
+        padding-left: 1.5rem;
+    }
+    
+    .lesson-content img {
+        max-width: 100%;
+        border-radius: 10px;
+        margin: 1.5rem 0;
+    }
+    
+    .lesson-sidebar {
+        position: sticky;
+        top: 100px;
+    }
+    
+    .course-progress {
+        height: 8px;
+        border-radius: 4px;
+    }
+    
+    .vocabulary-card {
+        margin-bottom: 15px;
+        border-left: 3px solid var(--primary-color);
+        transition: all 0.3s;
+    }
+    
+    .vocabulary-card:hover {
+        transform: translateX(5px);
+    }
+    
+    .grammar-point {
+        background-color: rgba(67, 97, 238, 0.05);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .grammar-point h4 {
+        color: var(--primary-color);
+        margin-bottom: 15px;
+    }
+    
+    .grammar-examples {
+        border-left: 3px solid var(--primary-color);
+        padding-left: 15px;
+    }
+    
+    .nav-pills .nav-link {
+        border-radius: 50px;
+        padding: 8px 20px;
+        margin-right: 10px;
+        font-weight: 500;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: var(--primary-color);
+    }
+    
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        height: 0;
+        overflow: hidden;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    
+    .audio-player {
+        width: 100%;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    /* Animation for vocabulary cards */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    /* Dialog bubbles for conversation examples */
+    .dialog-bubble {
+        position: relative;
+        padding: 15px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        max-width: 80%;
+    }
+    
+    .dialog-bubble.left {
+        background-color: #f0f0f0;
+        margin-right: auto;
+    }
+    
+    .dialog-bubble.right {
+        background-color: #e3f2fd;
+        margin-left: auto;
+    }
+    
+    .dialog-bubble.left:after {
+        content: '';
+        position: absolute;
+        bottom: 15px;
+        left: -10px;
+        border-width: 10px 10px 0;
+        border-style: solid;
+        border-color: #f0f0f0 transparent transparent;
+        transform: rotate(90deg);
+    }
+    
+    .dialog-bubble.right:after {
+        content: '';
+        position: absolute;
+        bottom: 15px;
+        right: -10px;
+        border-width: 10px 10px 0;
+        border-style: solid;
+        border-color: #e3f2fd transparent transparent;
+        transform: rotate(-90deg);
+    }
+    
+    .dialog-speaker {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    /* Exercise styles */
+    .exercise-question {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .exercise-option {
+        cursor: pointer;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        margin-bottom: 10px;
+        transition: all 0.3s;
+    }
+    
+    .exercise-option:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+        border-color: var(--primary-color);
+    }
+    
+    .exercise-option.selected {
+        background-color: rgba(67, 97, 238, 0.1);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-voice-record {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        transition: all 0.3s;
+    }
+    
+    .btn-voice-record:hover {
+        background-color: var(--secondary-color);
+        transform: scale(1.05);
+    }
+    
+    .btn-voice-record.recording {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(67, 97, 238, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Lesson Header -->
+<section class="lesson-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item"><a href="{{ url_for('courses') }}" class="text-white">Khóa học</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}" class="text-white">{{ course.title }}</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Bài {{ lesson.order }}</li>
+                    </ol>
+                </nav>
+                <h1 class="mb-3">{{ lesson.title }}</h1>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-light text-primary me-3">Bài {{ lesson.order }}</span>
+                    <span class="me-4"><i class="far fa-clock me-1"></i> {{ lesson.estimated_time }} phút</span>
+                </div>
+            </div>
+            <div class="col-md-4 d-flex justify-content-end">
+                <div class="btn-group">
+                    {% if prev_lesson %}
+                        <a href="{{ url_for('lesson_detail', lesson_id=prev_lesson.id) }}" class="btn btn-light">
+                            <i class="fas fa-chevron-left me-1"></i> Bài trước
+                        </a>
+                    {% else %}
+                        <button class="btn btn-light" disabled>
+                            <i class="fas fa-chevron-left me-1"></i> Bài trước
+                        </button>
+                    {% endif %}
+                    
+                    {% if next_lesson %}
+                        <a href="{{ url_for('lesson_detail', lesson_id=next_lesson.id) }}" class="btn btn-light">
+                            Bài tiếp theo <i class="fas fa-chevron-right ms-1"></i>
+                        </a>
+                    {% else %}
+                        <button class="btn btn-light" disabled>
+                            Bài tiếp theo <i class="fas fa-chevron-right ms-1"></i>
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container mb-5">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8 mb-4">
+            <!-- Lesson Navigation -->
+            <div class="card shadow-sm mb-4 lesson-navigation">
+                <div class="card-body py-2">
+                    <ul class="nav nav-pills" id="lessonTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="content-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#content" type="button" role="tab" 
+                                    aria-controls="content" aria-selected="true">
+                                <i class="fas fa-book me-1"></i> Nội dung
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="exercises-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#exercises" type="button" role="tab" 
+                                    aria-controls="exercises" aria-selected="false">
+                                <i class="fas fa-tasks me-1"></i> Bài tập
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="resources-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#resources" type="button" role="tab" 
+                                    aria-controls="resources" aria-selected="false">
+                                <i class="fas fa-file-alt me-1"></i> Tài liệu
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="tab-content" id="lessonTabContent">
+                <!-- Content Tab -->
+                <div class="tab-pane fade show active" id="content" role="tabpanel" aria-labelledby="content-tab">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body lesson-content">
+                            {% if content.title %}
+                                <h2>{{ content.title }}</h2>
+                                <p class="lead">{{ content.description }}</p>
+                                
+                                {% if content.objectives %}
+                                    <div class="mb-4">
+                                        <h3>Mục tiêu bài học</h3>
+                                        <ul>
+                                            {% for objective in content.objectives %}
+                                                <li>{{ objective }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if content.sections %}
+                                    {% for section in content.sections %}
+                                        <section class="mb-5">
+                                            <h3>{{ section.title }}</h3>
+                                            <div class="mb-4">{{ section.content|safe }}</div>
+                                            
+                                            {% if section.vocabulary_list %}
+                                                <div class="mb-4">
+                                                    <h4 class="mb-3">Từ vựng</h4>
+                                                    <div class="row">
+                                                        {% for word in section.vocabulary_list %}
+                                                            <div class="col-md-6 animate-fade-in-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                                                                <div class="card vocabulary-card mb-3">
+                                                                    <div class="card-body">
+                                                                        <h5 class="card-title">{{ word.word }}</h5>
+                                                                        <p class="card-text text-muted mb-2">{{ word.meaning }}</p>
+                                                                        <p class="card-text fst-italic">{{ word.example }}</p>
+                                                                        <button class="btn btn-sm btn-outline-primary speak-button" data-text="{{ word.word }}">
+                                                                            <i class="fas fa-volume-up"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if section.grammar_points %}
+                                                <div class="mb-4">
+                                                    <h4 class="mb-3">Ngữ pháp</h4>
+                                                    {% for grammar in section.grammar_points %}
+                                                        <div class="grammar-point">
+                                                            <h4>{{ grammar.title }}</h4>
+                                                            <p>{{ grammar.explanation }}</p>
+                                                            <div class="grammar-examples">
+                                                                {% for example in grammar.examples %}
+                                                                    <p class="mb-2">{{ example }}</p>
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if section.exercises %}
+                                                <div class="mb-4">
+                                                    <h4 class="mb-3">Luyện tập</h4>
+                                                    {% for exercise in section.exercises %}
+                                                        <div class="exercise-question">
+                                                            <h5 class="mb-3">{{ exercise.question }}</h5>
+                                                            
+                                                            {% if exercise.type == 'multiple_choice' and exercise.options %}
+                                                                {% for option in exercise.options %}
+                                                                    <div class="exercise-option" data-option="{{ loop.index0 }}">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <div class="me-3">
+                                                                                <div class="btn btn-outline-primary btn-sm rounded-circle">
+                                                                                    {{ loop.index }}
+                                                                                </div>
+                                                                            </div>
+                                                                            <div>{{ option }}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endfor %}
+                                                            {% elif exercise.type == 'fill_in_blank' %}
+                                                                <div class="mb-3">
+                                                                    <input type="text" class="form-control" placeholder="Nhập câu trả lời">
+                                                                </div>
+                                                            {% elif exercise.type == 'matching' %}
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        {% for i in range(5) %}
+                                                                            <div class="card mb-2">
+                                                                                <div class="card-body py-2">Item {{ i+1 }}</div>
+                                                                            </div>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        {% for i in range(5) %}
+                                                                            <div class="card mb-2">
+                                                                                <div class="card-body py-2">Match {{ i+1 }}</div>
+                                                                            </div>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </section>
+                                    {% endfor %}
+                                {% else %}
+                                    <div>{{ content.html|safe }}</div>
+                                {% endif %}
+                            {% else %}
+                                <div>{{ lesson.content|safe }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Listening Practice (Example) -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h4 class="mb-0"><i class="fas fa-headphones me-2"></i>Luyện nghe</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">Hãy nghe đoạn hội thoại sau và trả lời câu hỏi:</p>
+                            
+                            <div class="audio-player mb-4">
+                                <audio controls class="w-100">
+                                    <source src="{{ url_for('static', filename='audio/sample.mp3') }}" type="audio/mpeg">
+                                    Trình duyệt của bạn không hỗ trợ phát audio.
+                                </audio>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5>Đoạn hội thoại:</h5>
+                                <div class="conversation-container">
+                                    <div class="dialog-bubble left">
+                                        <div class="dialog-speaker">John:</div>
+                                        <p>Hi Sarah, how are you doing today?</p>
+                                    </div>
+                                    <div class="dialog-bubble right">
+                                        <div class="dialog-speaker">Sarah:</div>
+                                        <p>I'm doing well, thanks for asking. How about you?</p>
+                                    </div>
+                                    <div class="dialog-bubble left">
+                                        <div class="dialog-speaker">John:</div>
+                                        <p>I'm good too. I was wondering if you'd like to join me for lunch later.</p>
+                                    </div>
+                                    <div class="dialog-bubble right">
+                                        <div class="dialog-speaker">Sarah:</div>
+                                        <p>Sure, that sounds great! What time were you thinking?</p>
+                                    </div>
+                                    <div class="dialog-bubble left">
+                                        <div class="dialog-speaker">John:</div>
+                                        <p>How about 12:30? We could go to that new restaurant that just opened.</p>
+                                    </div>
+                                    <div class="dialog-bubble right">
+                                        <div class="dialog-speaker">Sarah:</div>
+                                        <p>Perfect! I'll meet you there at 12:30.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5>Câu hỏi:</h5>
+                                <div class="exercise-question">
+                                    <p>What time will they meet for lunch?</p>
+                                    <div class="exercise-option" data-option="0">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <div class="btn btn-outline-primary btn-sm rounded-circle">A</div>
+                                            </div>
+                                            <div>12:00</div>
+                                        </div>
+                                    </div>
+                                    <div class="exercise-option" data-option="1">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <div class="btn btn-outline-primary btn-sm rounded-circle">B</div>
+                                            </div>
+                                            <div>12:30</div>
+                                        </div>
+                                    </div>
+                                    <div class="exercise-option" data-option="2">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <div class="btn btn-outline-primary btn-sm rounded-circle">C</div>
+                                            </div>
+                                            <div>1:00</div>
+                                        </div>
+                                    </div>
+                                    <div class="exercise-option" data-option="3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <div class="btn btn-outline-primary btn-sm rounded-circle">D</div>
+                                            </div>
+                                            <div>1:30</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Speaking Practice (Example) -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h4 class="mb-0"><i class="fas fa-microphone me-2"></i>Luyện nói</h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">Hãy nói về chủ đề "Sở thích của bạn" trong 30 giây:</p>
+                            
+                            <div class="text-center mb-4">
+                                <button class="btn-voice-record" id="recordButton">
+                                    <i class="fas fa-microphone" id="recordIcon"></i>
+                                </button>
+                                <p class="mt-2" id="recordStatus">Nhấn để bắt đầu ghi âm</p>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button class="btn btn-outline-primary" id="listenButton" disabled>
+                                    <i class="fas fa-volume-up me-1"></i> Nghe lại
+                                </button>
+                                <button class="btn btn-primary" id="submitSpeakingButton" disabled>
+                                    <i class="fas fa-paper-plane me-1"></i> Nộp bài
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Complete Lesson -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-lg" id="completeLesson">
+                            <i class="fas fa-check-circle me-2"></i> Hoàn thành bài học
+                        </button>
+                        
+                        {% if next_lesson %}
+                            <a href="{{ url_for('lesson_detail', lesson_id=next_lesson.id) }}" class="btn btn-outline-primary">
+                                Bài tiếp theo: {{ next_lesson.title }} <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-outline-primary">
+                                Quay lại trang khóa học <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Exercises Tab -->
+                <div class="tab-pane fade" id="exercises" role="tabpanel" aria-labelledby="exercises-tab">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>Bài tập</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if exercises %}
+                                <p class="mb-4">Hoàn thành các bài tập dưới đây để củng cố kiến thức của bạn.</p>
+                                
+                                <div class="row">
+                                    {% for exercise in exercises %}
+                                        <div class="col-md-6 mb-4">
+                                            {{ exercise_card(exercise) }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-tasks text-muted" style="font-size: 4rem;"></i>
+                                    <p class="mt-3">Bài học này chưa có bài tập.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resources Tab -->
+                <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Tài liệu học tập</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if materials %}
+                                <p class="mb-4">Tài liệu bổ sung để nâng cao kiến thức.</p>
+                                
+                                <div class="list-group">
+                                    {% for material in materials %}
+                                        <a href="{{ url_for('static', filename='uploads/' + material.file_path) if material.file_path else material.external_url }}" 
+                                           class="list-group-item list-group-item-action" 
+                                           target="_blank">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    {% if material.type == 'pdf' %}
+                                                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                    {% elif material.type == 'video' %}
+                                                        <i class="fas fa-video text-primary me-2"></i>
+                                                    {% elif material.type == 'audio' %}
+                                                        <i class="fas fa-headphones text-success me-2"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-file-alt text-info me-2"></i>
+                                                    {% endif %}
+                                                    {{ material.title }}
+                                                    {% if material.is_required %}
+                                                        <span class="badge bg-danger ms-2">Bắt buộc</span>
+                                                    {% endif %}
+                                                </div>
+                                                <i class="fas fa-download"></i>
+                                            </div>
+                                            {% if material.description %}
+                                                <small class="text-muted d-block mt-1">{{ material.description }}</small>
+                                            {% endif %}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-file-alt text-muted" style="font-size: 4rem;"></i>
+                                    <p class="mt-3">Bài học này chưa có tài liệu bổ sung.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="lesson-sidebar">
+                <!-- Course Progress -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Tiến độ khóa học</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span>Hoàn thành</span>
+                                <span>{{ enrollment.progress|round|int }}%</span>
+                            </div>
+                            <div class="progress course-progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ enrollment.progress }}%" 
+                                    aria-valuenow="{{ enrollment.progress|round|int }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        
+                        <p class="mb-2 text-muted">
+                            <i class="fas fa-book me-1"></i> Bài {{ lesson.order }} / {{ total_lessons }}
+                        </p>
+                        
+                        <div class="d-grid mt-3">
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-chevron-left me-1"></i> Quay lại khóa học
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ask AI Assistant -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-robot me-2"></i>Trợ lý AI</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">Bạn có câu hỏi về bài học này? Hãy hỏi trợ lý AI của chúng tôi!</p>
+                        
+                        <div class="mb-3">
+                            <textarea class="form-control" id="aiQuestion" rows="3" placeholder="Nhập câu hỏi của bạn..."></textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button class="btn btn-primary" id="askAIButton">
+                                <i class="fas fa-paper-plane me-1"></i> Gửi câu hỏi
+                            </button>
+                        </div>
+                        
+                        <div class="mt-3 d-none" id="aiResponse">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h6 class="mb-2"><i class="fas fa-robot me-2"></i>Trợ lý AI</h6>
+                                    <p class="mb-0" id="aiResponseText"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vocabulary Flashcards -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-language me-2"></i>Thẻ từ vựng</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">Thẻ từ vựng giúp bạn ghi nhớ các từ mới.</p>
+                        
+                        <div class="flashcard-container position-relative mb-3" style="height: 200px;">
+                            <div class="card position-absolute w-100 h-100" id="flashcard" style="transform-style: preserve-3d; transition: transform 0.5s;">
+                                <div class="card-body d-flex flex-column justify-content-center align-items-center position-absolute w-100 h-100" style="backface-visibility: hidden;">
+                                    <h5 class="mb-3" id="flashcardFront">vocabulary</h5>
+                                    <small class="text-muted">Nhấn để xem nghĩa</small>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-center align-items-center position-absolute w-100 h-100 bg-light" style="backface-visibility: hidden; transform: rotateY(180deg);">
+                                    <p class="mb-1" id="flashcardBack">từ vựng</p>
+                                    <p class="fst-italic mb-0 text-muted" id="flashcardExample">Learning vocabulary is important.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-primary" id="prevFlashcard">
+                                <i class="fas fa-chevron-left me-1"></i> Trước
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" id="nextFlashcard">
+                                Tiếp <i class="fas fa-chevron-right ms-1"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="progress mt-3" style="height: 5px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 20%;" 
+                                aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" id="flashcardProgress"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notes -->
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Ghi chú</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">Thêm ghi chú cho bài học này:</p>
+                        
+                        <div class="mb-3">
+                            <textarea class="form-control" id="lessonNotes" rows="5" placeholder="Nhập ghi chú của bạn..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-secondary" id="clearNotes">
+                                <i class="fas fa-eraser me-1"></i> Xóa
+                            </button>
+                            <button class="btn btn-sm btn-primary" id="saveNotes">
+                                <i class="fas fa-save me-1"></i> Lưu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Exercise options
+        const exerciseOptions = document.querySelectorAll('.exercise-option');
+        exerciseOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options in the same group
+                const parent = this.closest('.exercise-question');
+                parent.querySelectorAll('.exercise-option').forEach(op => {
+                    op.classList.remove('selected');
+                });
+                
+                // Add selected class to clicked option
+                this.classList.add('selected');
+            });
+        });
+        
+        // Voice recording simulation
+        const recordButton = document.getElementById('recordButton');
+        const recordIcon = document.getElementById('recordIcon');
+        const recordStatus = document.getElementById('recordStatus');
+        const listenButton = document.getElementById('listenButton');
+        const submitSpeakingButton = document.getElementById('submitSpeakingButton');
+        
+        let isRecording = false;
+        let recordingTimer;
+        
+        if (recordButton) {
+            recordButton.addEventListener('click', function() {
+                if (!isRecording) {
+                    // Start recording
+                    isRecording = true;
+                    recordButton.classList.add('recording');
+                    recordIcon.classList.remove('fa-microphone');
+                    recordIcon.classList.add('fa-stop');
+                    recordStatus.textContent = 'Đang ghi âm... (0:00)';
+                    
+                    let seconds = 0;
+                    recordingTimer = setInterval(() => {
+                        seconds++;
+                        const minutes = Math.floor(seconds / 60);
+                        const remainingSeconds = seconds % 60;
+                        recordStatus.textContent = `Đang ghi âm... (${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds})`;
+                        
+                        // Auto stop after 60 seconds
+                        if (seconds >= 60) {
+                            stopRecording();
+                        }
+                    }, 1000);
+                } else {
+                    // Stop recording
+                    stopRecording();
+                }
+            });
+            
+            function stopRecording() {
+                isRecording = false;
+                clearInterval(recordingTimer);
+                recordButton.classList.remove('recording');
+                recordIcon.classList.remove('fa-stop');
+                recordIcon.classList.add('fa-microphone');
+                recordStatus.textContent = 'Ghi âm hoàn tất!';
+                
+                // Enable buttons
+                listenButton.disabled = false;
+                submitSpeakingButton.disabled = false;
+            }
+            
+            // Listen button
+            listenButton.addEventListener('click', function() {
+                // Simulate playing recording
+                recordStatus.textContent = 'Đang phát...';
+                setTimeout(() => {
+                    recordStatus.textContent = 'Ghi âm hoàn tất!';
+                }, 3000);
+            });
+            
+            // Submit speaking button
+            submitSpeakingButton.addEventListener('click', function() {
+                recordStatus.textContent = 'Đã nộp bài!';
+                this.disabled = true;
+                listenButton.disabled = true;
+                
+                // Show completion message
+                setTimeout(() => {
+                    const feedbackCard = document.createElement('div');
+                    feedbackCard.className = 'alert alert-success mt-3';
+                    feedbackCard.innerHTML = `
+                        <h5><i class="fas fa-check-circle me-2"></i>Đã nộp!</h5>
+                        <p class="mb-0">Bài nói của bạn đã được nộp thành công. Bạn sẽ nhận được phản hồi sớm.</p>
+                    `;
+                    this.parentNode.parentNode.appendChild(feedbackCard);
+                }, 1000);
+            });
+        }
+        
+        // Text-to-speech for vocabulary
+        const speakButtons = document.querySelectorAll('.speak-button');
+        speakButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const text = this.getAttribute('data-text');
+                
+                // Check if browser supports speech synthesis
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'en-US';
+                    window.speechSynthesis.speak(utterance);
+                }
+            });
+        });
+        
+        // Flashcard functionality
+        const flashcard = document.getElementById('flashcard');
+        const flashcardFront = document.getElementById('flashcardFront');
+        const flashcardBack = document.getElementById('flashcardBack');
+        const flashcardExample = document.getElementById('flashcardExample');
+        const prevFlashcard = document.getElementById('prevFlashcard');
+        const nextFlashcard = document.getElementById('nextFlashcard');
+        const flashcardProgress = document.getElementById('flashcardProgress');
+        
+        // Sample flashcards
+        const flashcards = [
+            { word: 'vocabulary', meaning: 'từ vựng', example: 'Learning vocabulary is important.' },
+            { word: 'grammar', meaning: 'ngữ pháp', example: 'English grammar can be challenging.' },
+            { word: 'pronunciation', meaning: 'phát âm', example: 'Good pronunciation helps people understand you.' },
+            { word: 'fluency', meaning: 'sự trôi chảy', example: 'Practice regularly to improve your fluency.' },
+            { word: 'comprehension', meaning: 'sự hiểu', example: 'Reading comprehension is a valuable skill.' }
+        ];
+        
+        let currentFlashcard = 0;
+        
+        if (flashcard) {
+            // Flip card on click
+            flashcard.addEventListener('click', function() {
+                this.style.transform = this.style.transform === 'rotateY(180deg)' ? 'rotateY(0deg)' : 'rotateY(180deg)';
+            });
+            
+            // Update flashcard content
+            function updateFlashcard() {
+                flashcardFront.textContent = flashcards[currentFlashcard].word;
+                flashcardBack.textContent = flashcards[currentFlashcard].meaning;
+                flashcardExample.textContent = flashcards[currentFlashcard].example;
+                
+                // Reset card position
+                flashcard.style.transform = 'rotateY(0deg)';
+                
+                // Update progress bar
+                const progress = ((currentFlashcard + 1) / flashcards.length) * 100;
+                flashcardProgress.style.width = `${progress}%`;
+                flashcardProgress.setAttribute('aria-valuenow', progress);
+            }
+            
+            // Previous flashcard
+            prevFlashcard.addEventListener('click', function() {
+                currentFlashcard = (currentFlashcard - 1 + flashcards.length) % flashcards.length;
+                updateFlashcard();
+            });
+            
+            // Next flashcard
+            nextFlashcard.addEventListener('click', function() {
+                currentFlashcard = (currentFlashcard + 1) % flashcards.length;
+                updateFlashcard();
+            });
+            
+            // Initialize flashcard
+            updateFlashcard();
+        }
+        
+        // AI Assistant functionality
+        const askAIButton = document.getElementById('askAIButton');
+        const aiQuestion = document.getElementById('aiQuestion');
+        const aiResponse = document.getElementById('aiResponse');
+        const aiResponseText = document.getElementById('aiResponseText');
+        
+        if (askAIButton) {
+            askAIButton.addEventListener('click', function() {
+                const question = aiQuestion.value.trim();
+                
+                if (question) {
+                    // Show loading
+                    askAIButton.disabled = true;
+                    askAIButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...';
+                    
+                    // Simulate AI response after delay
+                    setTimeout(() => {
+                        // Generate a response based on the question
+                        let response = '';
+                        
+                        if (question.toLowerCase().includes('vocabulary') || question.toLowerCase().includes('từ vựng')) {
+                            response = 'Từ vựng là tập hợp các từ mà một người biết và sử dụng. Để học từ vựng hiệu quả, bạn nên kết hợp nhiều phương pháp như thẻ ghi nhớ, ngữ cảnh, và thực hành thường xuyên. Bạn cũng có thể sử dụng tính năng Thẻ từ vựng trong bài học này để luyện tập.';
+                        } else if (question.toLowerCase().includes('grammar') || question.toLowerCase().includes('ngữ pháp')) {
+                            response = 'Ngữ pháp là tập hợp các quy tắc cấu trúc câu trong ngôn ngữ. Trong bài học này, chúng ta đã học về thì hiện tại đơn và cách sử dụng của nó. Bạn nên luyện tập bằng cách tạo câu của riêng mình và làm các bài tập trong phần Bài tập.';
+                        } else if (question.toLowerCase().includes('listening') || question.toLowerCase().includes('nghe')) {
+                            response = 'Để cải thiện kỹ năng nghe, bạn nên thực hành thường xuyên với nhiều nguồn khác nhau như podcast, phim, hay bài hát. Trong phần Luyện nghe của bài học này, bạn có thể nghe lại đoạn hội thoại nhiều lần và tập trung vào các từ và cụm từ mới.';
+                        } else if (question.toLowerCase().includes('speaking') || question.toLowerCase().includes('nói')) {
+                            response = 'Luyện nói là cách tốt nhất để cải thiện khả năng giao tiếp. Bạn có thể sử dụng tính năng ghi âm trong phần Luyện nói để thực hành phát âm và lưu loát. Đừng ngại mắc lỗi - đó là một phần của quá trình học!';
+                        } else {
+                            response = 'Cảm ơn câu hỏi của bạn! Để hiểu rõ hơn về nội dung bài học này, bạn nên xem lại các phần từ vựng và ngữ pháp. Thực hành thường xuyên với các bài tập là cách tốt nhất để nắm vững kiến thức. Nếu bạn cần hỗ trợ thêm, hãy liên hệ với giáo viên hoặc đặt câu hỏi cụ thể hơn.';
+                        }
+                        
+                        // Show response
+                        aiResponseText.textContent = response;
+                        aiResponse.classList.remove('d-none');
+                        
+                        // Reset button
+                        askAIButton.disabled = false;
+                        askAIButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Gửi câu hỏi';
+                    }, 1500);
+                }
+            });
+        }
+        
+        // Notes functionality
+        const lessonNotes = document.getElementById('lessonNotes');
+        const saveNotes = document.getElementById('saveNotes');
+        const clearNotes = document.getElementById('clearNotes');
+        
+        if (lessonNotes) {
+            // Load saved notes
+            const savedNotes = localStorage.getItem(`lesson_notes_${lesson.id}`);
+            if (savedNotes) {
+                lessonNotes.value = savedNotes;
+            }
+            
+            // Save notes
+            saveNotes.addEventListener('click', function() {
+                const notes = lessonNotes.value.trim();
+                localStorage.setItem(`lesson_notes_${lesson.id}`, notes);
+                
+                // Show saved message
+                const savedAlert = document.createElement('div');
+                savedAlert.className = 'alert alert-success mt-3';
+                savedAlert.textContent = 'Ghi chú đã được lưu!';
+                
+                this.parentNode.parentNode.appendChild(savedAlert);
+                
+                // Remove message after 2 seconds
+                setTimeout(() => {
+                    savedAlert.remove();
+                }, 2000);
+            });
+            
+            // Clear notes
+            clearNotes.addEventListener('click', function() {
+                if (confirm('Bạn có chắc chắn muốn xóa ghi chú?')) {
+                    lessonNotes.value = '';
+                    localStorage.removeItem(`lesson_notes_${lesson.id}`);
+                }
+            });
+        }
+        
+        // Complete lesson button
+        const completeLesson = document.getElementById('completeLesson');
+        if (completeLesson) {
+            completeLesson.addEventListener('click', function() {
+                // Show loading
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Đang xử lý...';
+                
+                // Simulate completion after delay
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check-circle me-2"></i> Đã hoàn thành';
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-success');
+                    
+                    // Show completion message
+                    const completionAlert = document.createElement('div');
+                    completionAlert.className = 'alert alert-success mt-3';
+                    completionAlert.innerHTML = `
+                        <h5><i class="fas fa-trophy me-2"></i>Chúc mừng!</h5>
+                        <p>Bạn đã hoàn thành bài học <strong>${lesson.title}</strong>. Tiến độ khóa học đã được cập nhật.</p>
+                    `;
+                    
+                    this.parentNode.prepend(completionAlert);
+                    
+                    // Update progress in sidebar
+                    const progressBar = document.querySelector('.progress .progress-bar');
+                    const progressText = document.querySelector('.d-flex span:last-child');
+                    
+                    if (progressBar && progressText) {
+                        const currentProgress = parseInt(progressBar.getAttribute('aria-valuenow'));
+                        const newProgress = Math.min(currentProgress + 10, 100);
+                        
+                        progressBar.style.width = `${newProgress}%`;
+                        progressBar.setAttribute('aria-valuenow', newProgress);
+                        progressText.textContent = `${newProgress}%`;
+                    }
+                }, 2000);
+            });
+        }
+    });
+</script>
+{% endblock %}

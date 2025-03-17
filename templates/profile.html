@@ -1,0 +1,719 @@
+{% extends "base.html" %}
+{% from "macros.html" import profile_info_card, badge_card %}
+
+{% block title %}Hồ sơ cá nhân - VietEnglish{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="mb-0">
+                <i class="fas fa-user-circle me-2 text-primary"></i>Hồ sơ cá nhân
+            </h1>
+            <p class="lead text-muted mt-2">Quản lý thông tin tài khoản và theo dõi tiến trình học tập của bạn</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="fas fa-edit me-1"></i> Chỉnh sửa hồ sơ
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Profile Information -->
+            {{ profile_info_card(current_user, profile) }}
+
+            <!-- Statistics Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2 text-success"></i>Thống kê học tập</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3 mb-md-0 text-center">
+                            <div class="display-4 fw-bold text-primary">{{ profile.total_points }}</div>
+                            <p class="text-muted mb-1">Tổng điểm</p>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>25 điểm tuần này
+                            </small>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0 text-center">
+                            <div class="display-4 fw-bold text-warning">{{ profile.study_streak }}</div>
+                            <p class="text-muted mb-1">Ngày liên tiếp</p>
+                            <small class="text-success">
+                                <i class="fas fa-fire me-1"></i>Thành tích tốt!
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="display-4 fw-bold text-success">
+                                {% if profile.language_level %}
+                                    {{ profile.language_level.split(' ')[0] }}
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </div>
+                            <p class="text-muted mb-1">Trình độ</p>
+                            <small class="text-muted">
+                                {% if profile.language_level %}
+                                    {{ profile.language_level.split(' ')[1].replace('(', '').replace(')', '') }}
+                                {% else %}
+                                    Chưa xác định
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5 class="mb-3">Hoạt động 7 ngày qua</h5>
+                            <canvas id="activityChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h5 class="mb-3">Thời gian học tập</h5>
+                            <canvas id="timeChart" height="200"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Phân bổ kỹ năng</h5>
+                            <canvas id="skillsChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        <a href="{{ url_for('user_statistics') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-chart-bar me-1"></i> Xem thống kê chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Achievements & Badges -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-award me-2 text-warning"></i>Thành tích và huy hiệu</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-2 row-cols-md-4 g-3">
+                        {% for badge in badges %}
+                            <div class="col">
+                                {{ badge_card(badge.badge, earned=True) }}
+                            </div>
+                        {% else %}
+                            <div class="col-12">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-award text-muted" style="font-size: 4rem;"></i>
+                                    <p class="mt-3">Bạn chưa có huy hiệu nào. Hãy tiếp tục học tập để đạt được thành tích!</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        <a href="{{ url_for('badges') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-trophy me-1"></i> Xem tất cả huy hiệu
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Learning Goals Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bullseye me-2 text-danger"></i>Mục tiêu học tập</h5>
+                </div>
+                <div class="card-body">
+                    {% if profile and profile.learning_goals %}
+                        <p>{{ profile.learning_goals }}</p>
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editGoalsModal">
+                            <i class="fas fa-edit me-1"></i> Cập nhật mục tiêu
+                        </button>
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-bullseye text-muted" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Bạn chưa đặt mục tiêu học tập.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editGoalsModal">
+                                <i class="fas fa-plus-circle me-1"></i> Thêm mục tiêu
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Learning Preferences Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-sliders-h me-2 text-info"></i>Tùy chọn học tập</h5>
+                </div>
+                <div class="card-body">
+                    {% if profile and profile.preferred_topics %}
+                        {% set topics = profile.preferred_topics.split(',') %}
+                        <h6 class="mb-3">Chủ đề yêu thích</h6>
+                        <div class="mb-4">
+                            {% for topic in topics %}
+                                <span class="badge bg-primary me-2 mb-2">{{ topic }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Bạn chưa đặt chủ đề yêu thích. Hãy cập nhật hồ sơ để nhận các khóa học phù hợp với sở thích của bạn.
+                        </div>
+                    {% endif %}
+                    
+                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editPreferencesModal">
+                        <i class="fas fa-cog me-1"></i> Tùy chỉnh tùy chọn
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Account Settings Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog me-2 text-secondary"></i>Cài đặt tài khoản</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-lock me-2 text-muted"></i> Mật khẩu
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                    Thay đổi
+                                </button>
+                            </div>
+                        </li>
+                        <li class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-envelope me-2 text-muted"></i> Email
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changeEmailModal">
+                                    Cập nhật
+                                </button>
+                            </div>
+                        </li>
+                        <li class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-bell me-2 text-muted"></i> Thông báo
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="notificationToggle" checked>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-moon me-2 text-muted"></i> Chế độ tối
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Quick Links -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-link me-2 text-primary"></i>Liên kết nhanh</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-tachometer-alt me-1"></i> Bảng điều khiển
+                        </a>
+                        <a href="{{ url_for('courses') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-book me-1"></i> Khóa học của tôi
+                        </a>
+                        <a href="{{ url_for('leaderboard') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-trophy me-1"></i> Bảng xếp hạng
+                        </a>
+                        <a href="{{ url_for('forums') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-comments me-1"></i> Diễn đàn
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chỉnh sửa hồ sơ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('profile') }}" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="position-relative d-inline-block">
+                                <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" 
+                                    alt="Avatar" class="img-thumbnail rounded-circle mb-3" 
+                                    style="width: 150px; height: 150px; object-fit: cover;" id="avatarPreview">
+                                <label for="avatarUpload" class="btn btn-sm btn-primary position-absolute bottom-0 end-0">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                                <input type="file" id="avatarUpload" name="avatar" class="d-none" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="fullname" class="form-label">Họ và tên</label>
+                                <input type="text" class="form-control" id="fullname" name="fullname" 
+                                       value="{{ current_user.fullname if current_user.fullname else '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Giới thiệu bản thân</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="3">{{ profile.bio if profile and profile.bio else '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="country" class="form-label">Quốc gia</label>
+                            <select class="form-select" id="country" name="country">
+                                <option value="">-- Chọn quốc gia --</option>
+                                <option value="Vietnam" {% if profile and profile.country == 'Vietnam' %}selected{% endif %}>Việt Nam</option>
+                                <option value="USA" {% if profile and profile.country == 'USA' %}selected{% endif %}>Hoa Kỳ</option>
+                                <option value="Japan" {% if profile and profile.country == 'Japan' %}selected{% endif %}>Nhật Bản</option>
+                                <option value="Korea" {% if profile and profile.country == 'Korea' %}selected{% endif %}>Hàn Quốc</option>
+                                <option value="Singapore" {% if profile and profile.country == 'Singapore' %}selected{% endif %}>Singapore</option>
+                                <option value="Australia" {% if profile and profile.country == 'Australia' %}selected{% endif %}>Úc</option>
+                                <option value="UK" {% if profile and profile.country == 'UK' %}selected{% endif %}>Vương quốc Anh</option>
+                                <option value="Canada" {% if profile and profile.country == 'Canada' %}selected{% endif %}>Canada</option>
+                                <option value="China" {% if profile and profile.country == 'China' %}selected{% endif %}>Trung Quốc</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ profile.phone if profile and profile.phone else '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="birth_date" class="form-label">Ngày sinh</label>
+                            <input type="date" class="form-control" id="birth_date" name="birth_date" 
+                                   value="{{ profile.birth_date.strftime('%Y-%m-%d') if profile and profile.birth_date else '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="preferred_topics" class="form-label">Chủ đề yêu thích</label>
+                            <select class="form-select" id="preferred_topics" name="preferred_topics" multiple>
+                                <option value="Greetings" {% if profile and profile.preferred_topics and 'Greetings' in profile.preferred_topics %}selected{% endif %}>Chào hỏi</option>
+                                <option value="Family" {% if profile and profile.preferred_topics and 'Family' in profile.preferred_topics %}selected{% endif %}>Gia đình</option>
+                                <option value="Food" {% if profile and profile.preferred_topics and 'Food' in profile.preferred_topics %}selected{% endif %}>Ẩm thực</option>
+                                <option value="Travel" {% if profile and profile.preferred_topics and 'Travel' in profile.preferred_topics %}selected{% endif %}>Du lịch</option>
+                                <option value="Work" {% if profile and profile.preferred_topics and 'Work' in profile.preferred_topics %}selected{% endif %}>Công việc</option>
+                                <option value="Hobbies" {% if profile and profile.preferred_topics and 'Hobbies' in profile.preferred_topics %}selected{% endif %}>Sở thích</option>
+                                <option value="Health" {% if profile and profile.preferred_topics and 'Health' in profile.preferred_topics %}selected{% endif %}>Sức khỏe</option>
+                                <option value="Environment" {% if profile and profile.preferred_topics and 'Environment' in profile.preferred_topics %}selected{% endif %}>Môi trường</option>
+                                <option value="Technology" {% if profile and profile.preferred_topics and 'Technology' in profile.preferred_topics %}selected{% endif %}>Công nghệ</option>
+                                <option value="Education" {% if profile and profile.preferred_topics and 'Education' in profile.preferred_topics %}selected{% endif %}>Giáo dục</option>
+                                <option value="Culture" {% if profile and profile.preferred_topics and 'Culture' in profile.preferred_topics %}selected{% endif %}>Văn hóa</option>
+                            </select>
+                            <small class="form-text text-muted">Nhấn giữ Ctrl (Cmd trên Mac) để chọn nhiều mục.</small>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="learning_goals" class="form-label">Mục tiêu học tập</label>
+                            <textarea class="form-control" id="learning_goals" name="learning_goals" rows="3">{{ profile.learning_goals if profile and profile.learning_goals else '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Goals Modal -->
+<div class="modal fade" id="editGoalsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cập nhật mục tiêu học tập</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('profile') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modalLearningGoals" class="form-label">Mục tiêu của bạn là gì?</label>
+                        <textarea class="form-control" id="modalLearningGoals" name="learning_goals" rows="5" placeholder="Ví dụ: Tôi muốn nâng cao kỹ năng giao tiếp tiếng Anh để phục vụ công việc...">{{ profile.learning_goals if profile and profile.learning_goals else '' }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu mục tiêu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Preferences Modal -->
+<div class="modal fade" id="editPreferencesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tùy chỉnh tùy chọn học tập</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('profile') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Chủ đề yêu thích</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Greetings" id="topicGreetings" {% if profile and profile.preferred_topics and 'Greetings' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicGreetings">Chào hỏi</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Family" id="topicFamily" {% if profile and profile.preferred_topics and 'Family' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicFamily">Gia đình</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Food" id="topicFood" {% if profile and profile.preferred_topics and 'Food' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicFood">Ẩm thực</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Travel" id="topicTravel" {% if profile and profile.preferred_topics and 'Travel' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicTravel">Du lịch</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Work" id="topicWork" {% if profile and profile.preferred_topics and 'Work' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicWork">Công việc</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Hobbies" id="topicHobbies" {% if profile and profile.preferred_topics and 'Hobbies' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicHobbies">Sở thích</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Technology" id="topicTechnology" {% if profile and profile.preferred_topics and 'Technology' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicTechnology">Công nghệ</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Education" id="topicEducation" {% if profile and profile.preferred_topics and 'Education' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicEducation">Giáo dục</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Culture" id="topicCulture" {% if profile and profile.preferred_topics and 'Culture' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicCulture">Văn hóa</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="preferred_topics" value="Environment" id="topicEnvironment" {% if profile and profile.preferred_topics and 'Environment' in profile.preferred_topics %}checked{% endif %}>
+                                    <label class="form-check-label" for="topicEnvironment">Môi trường</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Ưu tiên kỹ năng</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="skillSpeaking" checked>
+                            <label class="form-check-label" for="skillSpeaking">Nói (Speaking)</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="skillListening" checked>
+                            <label class="form-check-label" for="skillListening">Nghe (Listening)</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="skillReading" checked>
+                            <label class="form-check-label" for="skillReading">Đọc (Reading)</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="skillWriting" checked>
+                            <label class="form-check-label" for="skillWriting">Viết (Writing)</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="skillGrammar" checked>
+                            <label class="form-check-label" for="skillGrammar">Ngữ pháp (Grammar)</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="skillVocabulary" checked>
+                            <label class="form-check-label" for="skillVocabulary">Từ vựng (Vocabulary)</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu tùy chọn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thay đổi mật khẩu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
+                        <input type="password" class="form-control" id="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" id="passwordStrength"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                        <input type="password" class="form-control" id="confirmPassword" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Cập nhật mật khẩu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Email Modal -->
+<div class="modal fade" id="changeEmailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cập nhật email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="currentEmail" class="form-label">Email hiện tại</label>
+                        <input type="email" class="form-control" id="currentEmail" value="{{ current_user.email }}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newEmail" class="form-label">Email mới</label>
+                        <input type="email" class="form-control" id="newEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmEmail" class="form-label">Xác nhận email mới</label>
+                        <input type="email" class="form-control" id="confirmEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="passwordForEmail" class="form-label">Mật khẩu của bạn</label>
+                        <input type="password" class="form-control" id="passwordForEmail" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Cập nhật email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Avatar preview
+        const avatarUpload = document.getElementById('avatarUpload');
+        const avatarPreview = document.getElementById('avatarPreview');
+        
+        if (avatarUpload && avatarPreview) {
+            avatarUpload.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        avatarPreview.src = e.target.result;
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+        
+        // Password strength meter
+        const newPassword = document.getElementById('newPassword');
+        const passwordStrength = document.getElementById('passwordStrength');
+        
+        if (newPassword && passwordStrength) {
+            newPassword.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+                
+                if (password.length >= 8) strength += 25;
+                if (password.match(/[A-Z]/)) strength += 25;
+                if (password.match(/[0-9]/)) strength += 25;
+                if (password.match(/[^A-Za-z0-9]/)) strength += 25;
+                
+                passwordStrength.style.width = `${strength}%`;
+                
+                if (strength <= 25) {
+                    passwordStrength.className = 'progress-bar bg-danger';
+                } else if (strength <= 50) {
+                    passwordStrength.className = 'progress-bar bg-warning';
+                } else if (strength <= 75) {
+                    passwordStrength.className = 'progress-bar bg-info';
+                } else {
+                    passwordStrength.className = 'progress-bar bg-success';
+                }
+            });
+        }
+        
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        
+        if (darkModeToggle) {
+            // Check for saved dark mode preference
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'true');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'false');
+                }
+            });
+        }
+        
+        // Activity Chart
+        const activityCtx = document.getElementById('activityChart');
+        if (activityCtx) {
+            const activityChart = new Chart(activityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    datasets: [{
+                        label: 'Điểm học tập',
+                        data: [20, 35, 15, 45, 30, 25, 40],
+                        backgroundColor: 'rgba(67, 97, 238, 0.6)',
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Time Chart
+        const timeCtx = document.getElementById('timeChart');
+        if (timeCtx) {
+            const timeChart = new Chart(timeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Buổi sáng', 'Buổi trưa', 'Buổi tối'],
+                    datasets: [{
+                        data: [35, 25, 40],
+                        backgroundColor: [
+                            'rgba(76, 201, 240, 0.6)',
+                            'rgba(67, 97, 238, 0.6)',
+                            'rgba(247, 37, 133, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(76, 201, 240, 1)',
+                            'rgba(67, 97, 238, 1)',
+                            'rgba(247, 37, 133, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Skills Chart
+        const skillsCtx = document.getElementById('skillsChart');
+        if (skillsCtx) {
+            const skillsChart = new Chart(skillsCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Nói', 'Nghe', 'Đọc', 'Viết', 'Từ vựng', 'Ngữ pháp'],
+                    datasets: [{
+                        label: 'Mức độ thành thạo',
+                        data: [70, 85, 80, 65, 75, 60],
+                        backgroundColor: 'rgba(67, 97, 238, 0.2)',
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(67, 97, 238, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(67, 97, 238, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

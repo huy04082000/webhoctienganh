@@ -1,0 +1,845 @@
+{% extends "base.html" %}
+{% from "macros.html" import chat_message %}
+
+{% block title %}{{ room.name }} - VietEnglish{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: calc(100vh - 260px);
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .chat-header {
+        background-color: var(--primary-color);
+        color: white;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        padding: 15px 20px;
+    }
+    
+    .chat-members {
+        width: 250px;
+        border-left: 1px solid #eee;
+        padding: 15px;
+        overflow-y: auto;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+    
+    .chat-input {
+        border-top: 1px solid #eee;
+        padding: 15px;
+        background-color: white;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+    
+    .chat-message-bubble {
+        position: relative;
+        padding: 15px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        max-width: 80%;
+    }
+    
+    .chat-message-bubble.outgoing {
+        background-color: #4361ee;
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 5px;
+    }
+    
+    .chat-message-bubble.incoming {
+        background-color: #e9ecef;
+        color: #333;
+        border-bottom-left-radius: 5px;
+    }
+    
+    .chat-message-time {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        margin-top: 5px;
+        text-align: right;
+    }
+    
+    .chat-user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .chat-message-row {
+        display: flex;
+        align-items: flex-end;
+        margin-bottom: 20px;
+    }
+    
+    .chat-message-row.outgoing {
+        flex-direction: row-reverse;
+    }
+    
+    .chat-message-content {
+        margin: 0 10px;
+        flex: 1;
+    }
+    
+    .online-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #2ecc71;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    
+    .offline-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #95a5a6;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    
+    .chat-room-list {
+        max-height: calc(100vh - 260px);
+        overflow-y: auto;
+    }
+    
+    .chat-room-item {
+        border-radius: 10px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .chat-room-item:hover, .chat-room-item.active {
+        background-color: rgba(67, 97, 238, 0.1);
+    }
+    
+    .chat-room-item .unread-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        display: inline-block;
+    }
+    
+    .message-input {
+        border-radius: 20px;
+        resize: none;
+        overflow: hidden;
+        padding-right: 40px;
+    }
+    
+    .send-button {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        z-index: 10;
+        cursor: pointer;
+        background-color: var(--primary-color);
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+    
+    .send-button:hover {
+        background-color: var(--secondary-color);
+        transform: scale(1.05);
+    }
+    
+    /* Status messages */
+    .status-message {
+        text-align: center;
+        margin: 15px 0;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    /* Animation for new messages */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .new-message {
+        animation: fadeIn 0.3s ease;
+    }
+    
+    /* For AI assistant messages */
+    .chat-message-bubble.ai {
+        background-color: #f0f7ff;
+        color: #333;
+        border: 1px solid rgba(76, 201, 240, 0.3);
+        border-bottom-left-radius: 5px;
+    }
+    
+    .ai-avatar {
+        background-color: rgba(76, 201, 240, 0.1);
+        color: var(--info-color);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    /* Typing indicator */
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .typing-indicator-avatar {
+        margin-right: 10px;
+    }
+    
+    .typing-indicator-bubble {
+        background-color: #e9ecef;
+        padding: 10px 15px;
+        border-radius: 18px;
+        border-bottom-left-radius: 5px;
+        display: inline-block;
+    }
+    
+    .typing-indicator-bubble .dots {
+        display: inline-block;
+    }
+    
+    .typing-indicator-bubble .dots span {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #aaa;
+        margin-right: 5px;
+        animation: typingAnimation 1.5s infinite ease-in-out;
+    }
+    
+    .typing-indicator-bubble .dots span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .typing-indicator-bubble .dots span:nth-child(3) {
+        animation-delay: 0.4s;
+        margin-right: 0;
+    }
+    
+    @keyframes typingAnimation {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('chat_rooms') }}">Phòng chat</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ room.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Chat Rooms List -->
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2 text-primary"></i>Phòng chat</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush chat-room-list">
+                        <a href="#" class="list-group-item list-group-item-action chat-room-item active">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">{{ room.name }}</h6>
+                                <span class="badge bg-primary">{{ messages|length }}</span>
+                            </div>
+                            <p class="mb-1 text-muted">{{ room.description }}</p>
+                            <small>
+                                <span class="online-indicator"></span>
+                                10 người trực tuyến
+                            </small>
+                        </a>
+                        
+                        <!-- Other sample rooms -->
+                        <a href="#" class="list-group-item list-group-item-action chat-room-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">Luyện nói tiếng Anh</h6>
+                                <span class="unread-indicator"></span>
+                            </div>
+                            <p class="mb-1 text-muted">Cùng luyện tập khả năng nói tiếng Anh</p>
+                            <small>
+                                <span class="online-indicator"></span>
+                                8 người trực tuyến
+                            </small>
+                        </a>
+                        
+                        <a href="#" class="list-group-item list-group-item-action chat-room-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">Hỏi đáp ngữ pháp</h6>
+                            </div>
+                            <p class="mb-1 text-muted">Giải đáp thắc mắc về ngữ pháp tiếng Anh</p>
+                            <small>
+                                <span class="online-indicator"></span>
+                                5 người trực tuyến
+                            </small>
+                        </a>
+                        
+                        <a href="#" class="list-group-item list-group-item-action chat-room-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">Luyện thi IELTS</h6>
+                            </div>
+                            <p class="mb-1 text-muted">Chia sẻ kinh nghiệm ôn thi IELTS</p>
+                            <small>
+                                <span class="online-indicator"></span>
+                                12 người trực tuyến
+                            </small>
+                        </a>
+                        
+                        <a href="#" class="list-group-item list-group-item-action chat-room-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-1">Câu lạc bộ tiếng Anh</h6>
+                            </div>
+                            <p class="mb-1 text-muted">Thảo luận tự do bằng tiếng Anh</p>
+                            <small>
+                                <span class="offline-indicator"></span>
+                                Không hoạt động
+                            </small>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white p-3">
+                    <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                        <i class="fas fa-plus-circle me-1"></i> Tạo phòng chat
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Main -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="chat-container">
+                    <!-- Chat Header -->
+                    <div class="chat-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">{{ room.name }}</h5>
+                                <small>{{ room.description }}</small>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm text-white" type="button" id="chatOptions" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="chatOptions">
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-info-circle me-1"></i> Thông tin phòng chat</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-bell-slash me-1"></i> Tắt thông báo</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-search me-1"></i> Tìm kiếm tin nhắn</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-sign-out-alt me-1"></i> Rời phòng chat</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Messages -->
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Welcome message -->
+                        <div class="status-message">
+                            <div class="mb-1">18/03/2025</div>
+                            <div>Chào mừng đến với phòng chat "{{ room.name }}"!</div>
+                        </div>
+                        
+                        <!-- Sample AI assistant message -->
+                        <div class="chat-message-row">
+                            <div class="ai-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="chat-message-content">
+                                <div class="chat-message-bubble ai">
+                                    <div>
+                                        Xin chào! Tôi là trợ lý AI của VietEnglish. Tôi có thể giúp bạn:
+                                        <ul>
+                                            <li>Giải đáp thắc mắc về tiếng Anh</li>
+                                            <li>Giải thích ngữ pháp và từ vựng</li>
+                                            <li>Kiểm tra và sửa lỗi</li>
+                                            <li>Gợi ý tài liệu học tập</li>
+                                        </ul>
+                                        Hãy gõ <strong>/help</strong> để xem danh sách lệnh.
+                                    </div>
+                                    <div class="chat-message-time">10:00</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status message for user joining -->
+                        <div class="status-message">
+                            <div>Nguyễn Văn A đã tham gia phòng chat</div>
+                        </div>
+                        
+                        <!-- Actual messages -->
+                        {% for message in messages %}
+                            {{ chat_message(message, message.user_id == current_user.id) }}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="far fa-comments text-muted" style="font-size: 4rem;"></i>
+                                <p class="mt-3">Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!</p>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Typing indicator (hidden by default) -->
+                        <div class="typing-indicator d-none" id="typingIndicator">
+                            <div class="typing-indicator-avatar">
+                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
+                                    alt="Avatar" class="chat-user-avatar">
+                            </div>
+                            <div class="typing-indicator-bubble">
+                                <div class="dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input">
+                        <form id="messageForm">
+                            <div class="position-relative">
+                                <textarea class="form-control message-input" id="messageInput" rows="2" placeholder="Nhập tin nhắn..."></textarea>
+                                <button type="submit" class="send-button">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="fas fa-image"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="fas fa-smile"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Nhấn Enter để gửi, Shift+Enter để xuống dòng</small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Members List -->
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-users me-2 text-primary"></i>Thành viên</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <!-- Teachers and Admins -->
+                        <div class="p-3">
+                            <h6 class="mb-2">Giáo viên & Quản trị viên</h6>
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
+                                    alt="Teacher" class="chat-user-avatar me-2">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="online-indicator"></span>
+                                        <span>Giáo viên</span>
+                                        <span class="badge bg-info ms-2">GV</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
+                                    alt="Admin" class="chat-user-avatar me-2">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="online-indicator"></span>
+                                        <span>Admin</span>
+                                        <span class="badge bg-danger ms-2">QT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-0">
+                        
+                        <!-- Online Users -->
+                        <div class="p-3">
+                            <h6 class="mb-2">Đang trực tuyến (8)</h6>
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" 
+                                    alt="{{ current_user.username }}" class="chat-user-avatar me-2">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="online-indicator"></span>
+                                        <span>{{ current_user.username }} (Bạn)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
+                                    alt="User" class="chat-user-avatar me-2">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="online-indicator"></span>
+                                        <span>Nguyễn Văn A</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
+                                    alt="User" class="chat-user-avatar me-2">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="online-indicator"></span>
+                                        <span>Trần Thị B</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
+                                    alt="User" class="chat-user-avatar me-2">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="online-indicator"></span>
+                                        <span>Lê Văn C</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
+                                    alt="User" class="chat-user-avatar me-2">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="online-indicator"></span>
+                                        <span>Phạm Thị D</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <a href="#" class="btn btn-sm btn-outline-primary">Xem thêm</a>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-0">
+                        
+                        <!-- Offline Users -->
+                        <div class="p-3">
+                            <h6 class="mb-2">Ngoại tuyến</h6>
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
+                                    alt="User" class="chat-user-avatar me-2">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="offline-indicator"></span>
+                                        <span>Hoàng Văn E</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
+                                    alt="User" class="chat-user-avatar me-2">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="offline-indicator"></span>
+                                        <span>Vũ Thị F</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white p-3">
+                    <form class="d-flex">
+                        <input class="form-control me-2" type="search" placeholder="Tìm thành viên" aria-label="Search">
+                        <button class="btn btn-outline-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Room Modal -->
+<div class="modal fade" id="createRoomModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tạo phòng chat mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="roomName" class="form-label">Tên phòng chat</label>
+                        <input type="text" class="form-control" id="roomName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roomDescription" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="roomDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Loại phòng</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="roomType" id="publicRoom" value="public" checked>
+                            <label class="form-check-label" for="publicRoom">
+                                Công khai (Tất cả mọi người có thể tham gia)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="roomType" id="privateRoom" value="private">
+                            <label class="form-check-label" for="privateRoom">
+                                Riêng tư (Chỉ những người được mời mới có thể tham gia)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="inviteMembers" style="display: none;">
+                        <label for="members" class="form-label">Mời thành viên</label>
+                        <select class="form-select" id="members" multiple>
+                            <option value="user1">Nguyễn Văn A</option>
+                            <option value="user2">Trần Thị B</option>
+                            <option value="user3">Lê Văn C</option>
+                            <option value="user4">Phạm Thị D</option>
+                            <option value="user5">Hoàng Văn E</option>
+                        </select>
+                        <small class="form-text text-muted">Nhấn giữ Ctrl (Cmd trên Mac) để chọn nhiều người.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary">Tạo phòng chat</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Socket.io setup
+        const socket = io();
+        let typing = false;
+        let typingTimeout;
+        
+        // Join room
+        socket.emit('join', { room: '{{ room.id }}' });
+        
+        // Message form submission
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const typingIndicator = document.getElementById('typingIndicator');
+        
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            // Reset height to auto to get the right scrollHeight
+            this.style.height = 'auto';
+            // Set height to scrollHeight + 2px for border
+            this.style.height = (this.scrollHeight) + 'px';
+            
+            // Emit typing event
+            if (!typing) {
+                typing = true;
+                socket.emit('typing', { room: '{{ room.id }}', username: '{{ current_user.username }}' });
+            }
+            
+            // Clear previous timeout
+            clearTimeout(typingTimeout);
+            
+            // Set new timeout
+            typingTimeout = setTimeout(() => {
+                typing = false;
+                socket.emit('stop_typing', { room: '{{ room.id }}', username: '{{ current_user.username }}' });
+            }, 1000);
+        });
+        
+        // Handle Enter key for sending message
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                messageForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // Send message
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (message !== '') {
+                // Emit message to server
+                socket.emit('message', {
+                    room: '{{ room.id }}',
+                    message: message
+                });
+                
+                // Clear input
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                
+                // Stop typing indicator
+                typing = false;
+                socket.emit('stop_typing', { room: '{{ room.id }}', username: '{{ current_user.username }}' });
+            }
+        });
+        
+        // Receive messages
+        socket.on('message', function(data) {
+            // Create message element
+            const messageRow = document.createElement('div');
+            messageRow.className = 'chat-message-row new-message' + (data.user === '{{ current_user.username }}' ? ' outgoing' : '');
+            
+            // Avatar
+            const avatar = document.createElement('img');
+            avatar.src = data.user === '{{ current_user.username }}' ? 
+                        '{{ url_for('static', filename='uploads/' + current_user.avatar) }}' : 
+                        '{{ url_for('static', filename='uploads/default_avatar.png') }}';
+            avatar.alt = data.user;
+            avatar.className = 'chat-user-avatar';
+            
+            // Message content container
+            const messageContent = document.createElement('div');
+            messageContent.className = 'chat-message-content';
+            
+            // Message bubble
+            const messageBubble = document.createElement('div');
+            messageBubble.className = 'chat-message-bubble' + (data.user === '{{ current_user.username }}' ? ' outgoing' : ' incoming');
+            
+            // Message text
+            const messageText = document.createElement('div');
+            messageText.textContent = data.message;
+            
+            // Message time
+            const messageTime = document.createElement('div');
+            messageTime.className = 'chat-message-time';
+            messageTime.textContent = data.time;
+            
+            // Append elements
+            messageBubble.appendChild(messageText);
+            messageBubble.appendChild(messageTime);
+            messageContent.appendChild(messageBubble);
+            messageRow.appendChild(avatar);
+            messageRow.appendChild(messageContent);
+            
+            // Add to chat window
+            chatMessages.appendChild(messageRow);
+            
+            // Scroll to bottom
+            scrollToBottom();
+        });
+        
+        // Handle status messages (join, leave)
+        socket.on('status', function(data) {
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'status-message';
+            statusDiv.textContent = data.msg;
+            
+            chatMessages.appendChild(statusDiv);
+            scrollToBottom();
+        });
+        
+        // Handle typing indicator
+        socket.on('typing', function(data) {
+            if (data.username !== '{{ current_user.username }}') {
+                // Update typing indicator with user's info
+                const typingAvatar = typingIndicator.querySelector('img');
+                typingAvatar.alt = data.username;
+                
+                // Show typing indicator
+                typingIndicator.classList.remove('d-none');
+                scrollToBottom();
+            }
+        });
+        
+        socket.on('stop_typing', function(data) {
+            if (data.username !== '{{ current_user.username }}') {
+                // Hide typing indicator
+                typingIndicator.classList.add('d-none');
+            }
+        });
+        
+        // Toggle private room members field
+        const roomTypeRadios = document.querySelectorAll('input[name="roomType"]');
+        const inviteMembersField = document.getElementById('inviteMembers');
+        
+        roomTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'private') {
+                    inviteMembersField.style.display = 'block';
+                } else {
+                    inviteMembersField.style.display = 'none';
+                }
+            });
+        });
+        
+        // Scroll to bottom of chat
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Initial scroll to bottom
+        scrollToBottom();
+        
+        // Command handling
+        messageInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            
+            if (value === '/help') {
+                // Show help command list
+                const helpText = 
+                    "/help - Hiển thị danh sách lệnh\n" +
+                    "/clear - Xóa lịch sử chat\n" +
+                    "/ai [câu hỏi] - Hỏi trợ lý AI\n" +
+                    "/translate [văn bản] - Dịch văn bản sang tiếng Việt\n" +
+                    "/check [văn bản] - Kiểm tra ngữ pháp và chính tả\n" +
+                    "/define [từ] - Tra cứu từ điển";
+                
+                // Show command hints in a popover (simplified version)
+                alert(helpText);
+                
+                // Clear the input
+                this.value = '';
+            }
+        });
+    });
+</script>
+{% endblock %}

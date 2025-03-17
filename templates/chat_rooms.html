@@ -1,0 +1,742 @@
+{% extends "base.html" %}
+
+{% block title %}Phòng Chat - VietEnglish{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-card {
+        transition: all 0.3s;
+        border-radius: 15px;
+        overflow: hidden;
+        height: 100%;
+        border: none;
+    }
+    
+    .chat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .chat-card-header {
+        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 20px;
+    }
+    
+    .chat-card-body {
+        padding: 20px;
+    }
+    
+    .online-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #4cd137;
+        margin-right: 8px;
+        display: inline-block;
+    }
+    
+    .user-avatar-group {
+        display: flex;
+        margin-bottom: 15px;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+        margin-left: -15px;
+    }
+    
+    .user-avatar:first-child {
+        margin-left: 0;
+    }
+    
+    .search-room {
+        border-radius: 20px;
+        padding-left: 20px;
+    }
+    
+    .search-btn {
+        border-radius: 0 20px 20px 0;
+    }
+    
+    .badge-online-users {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        font-weight: normal;
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+    
+    .badge-popularity {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        font-weight: normal;
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+    
+    .chat-room-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 15px;
+    }
+    
+    .tab-pane {
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .create-room-card {
+        height: 100%;
+        border: 2px dashed rgba(67, 97, 238, 0.3);
+        background-color: rgba(67, 97, 238, 0.05);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .create-room-card:hover {
+        transform: translateY(-5px);
+        background-color: rgba(67, 97, 238, 0.1);
+        border-color: rgba(67, 97, 238, 0.5);
+    }
+    
+    .create-room-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="mb-0">
+                <i class="fas fa-comments me-2 text-primary"></i>Phòng Chat
+            </h1>
+            <p class="lead text-muted mt-2">Trao đổi và học hỏi cùng cộng đồng học viên và giáo viên</p>
+        </div>
+        <div class="col-lg-4">
+            <div class="input-group">
+                <input type="text" class="form-control search-room" placeholder="Tìm kiếm phòng chat..." id="searchRoom">
+                <button class="btn btn-primary search-btn" type="button" id="searchButton">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Rooms Tabs -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white p-0">
+            <ul class="nav nav-tabs" id="roomsTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="public-tab" data-bs-toggle="tab" 
+                            data-bs-target="#public-tab-pane" type="button" role="tab" 
+                            aria-controls="public-tab-pane" aria-selected="true">
+                        <i class="fas fa-globe me-1"></i> Phòng công khai
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="private-tab" data-bs-toggle="tab" 
+                            data-bs-target="#private-tab-pane" type="button" role="tab" 
+                            aria-controls="private-tab-pane" aria-selected="false">
+                        <i class="fas fa-lock me-1"></i> Phòng riêng tư
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="my-tab" data-bs-toggle="tab" 
+                            data-bs-target="#my-tab-pane" type="button" role="tab" 
+                            aria-controls="my-tab-pane" aria-selected="false">
+                        <i class="fas fa-user me-1"></i> Phòng của tôi
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="roomsTabContent">
+                <!-- Public Rooms Tab -->
+                <div class="tab-pane fade show active" id="public-tab-pane" role="tabpanel" aria-labelledby="public-tab" tabindex="0">
+                    <div class="row g-4">
+                        {% for room in rooms %}
+                            <div class="col-md-6 col-lg-4 room-card">
+                                <div class="card chat-card shadow-sm">
+                                    <div class="chat-card-header position-relative">
+                                        <span class="badge-popularity">
+                                            <i class="fas fa-fire me-1"></i> Nổi bật
+                                        </span>
+                                        <h5 class="mb-1">{{ room.name }}</h5>
+                                        <p class="mb-2 small">{{ room.description }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge badge-online-users">
+                                                <i class="fas fa-user me-1"></i> {{ 15 + loop.index * 5 }} người online
+                                            </span>
+                                            {% if room.creator_id == current_user.id %}
+                                                <span class="badge bg-warning text-dark">Phòng của bạn</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="chat-card-body">
+                                        <div class="user-avatar-group">
+                                            <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 1" class="user-avatar">
+                                            <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 2" class="user-avatar">
+                                            <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 3" class="user-avatar">
+                                            <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 4" class="user-avatar">
+                                            <div class="user-avatar d-flex align-items-center justify-content-center bg-light">
+                                                <small>+{{ 10 + loop.index * 3 }}</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-grid">
+                                            <a href="{{ url_for('chat_room', room_id=room.id) }}" class="btn btn-primary">
+                                                <i class="fas fa-sign-in-alt me-1"></i> Tham gia ngay
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Additional public rooms -->
+                        <div class="col-md-6 col-lg-4 room-card">
+                            <div class="card chat-card shadow-sm">
+                                <div class="chat-card-header position-relative">
+                                    <h5 class="mb-1">IELTS Discussion</h5>
+                                    <p class="mb-2 small">Cùng trao đổi và chia sẻ kinh nghiệm luyện thi IELTS</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge badge-online-users">
+                                            <i class="fas fa-user me-1"></i> 38 người online
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chat-card-body">
+                                    <div class="user-avatar-group">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 1" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 2" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 3" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 4" class="user-avatar">
+                                        <div class="user-avatar d-flex align-items-center justify-content-center bg-light">
+                                            <small>+23</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <a href="#" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt me-1"></i> Tham gia ngay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 room-card">
+                            <div class="card chat-card shadow-sm">
+                                <div class="chat-card-header position-relative">
+                                    <span class="badge-popularity">
+                                        <i class="fas fa-fire me-1"></i> Nổi bật
+                                    </span>
+                                    <h5 class="mb-1">English for Beginners</h5>
+                                    <p class="mb-2 small">Kênh chat dành cho người mới bắt đầu học tiếng Anh</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge badge-online-users">
+                                            <i class="fas fa-user me-1"></i> 72 người online
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chat-card-body">
+                                    <div class="user-avatar-group">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 1" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 2" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 3" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 4" class="user-avatar">
+                                        <div class="user-avatar d-flex align-items-center justify-content-center bg-light">
+                                            <small>+45</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <a href="#" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt me-1"></i> Tham gia ngay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 room-card">
+                            <div class="card chat-card shadow-sm">
+                                <div class="chat-card-header position-relative">
+                                    <h5 class="mb-1">Speaking Practice</h5>
+                                    <p class="mb-2 small">Luyện nói tiếng Anh cùng các thành viên khác</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge badge-online-users">
+                                            <i class="fas fa-user me-1"></i> 29 người online
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chat-card-body">
+                                    <div class="user-avatar-group">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 1" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 2" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 3" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 4" class="user-avatar">
+                                        <div class="user-avatar d-flex align-items-center justify-content-center bg-light">
+                                            <small>+18</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <a href="#" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt me-1"></i> Tham gia ngay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Create Room Card -->
+                        <div class="col-md-6 col-lg-4 room-card">
+                            <div class="card chat-card create-room-card shadow-sm" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                                <div class="create-room-icon">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <h5 class="mb-1">Tạo phòng mới</h5>
+                                <p class="text-muted">Tạo phòng chat của riêng bạn</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Private Rooms Tab -->
+                <div class="tab-pane fade" id="private-tab-pane" role="tabpanel" aria-labelledby="private-tab" tabindex="0">
+                    <div class="row">
+                        <div class="col-md-12 mb-4">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> Phòng riêng tư chỉ hiển thị khi bạn được mời tham gia.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-4 room-card">
+                            <div class="card chat-card shadow-sm">
+                                <div class="chat-card-header position-relative">
+                                    <span class="position-absolute top-0 end-0 mt-2 me-2">
+                                        <i class="fas fa-lock text-white"></i>
+                                    </span>
+                                    <h5 class="mb-1">Advanced Students</h5>
+                                    <p class="mb-2 small">Dành cho học viên trình độ nâng cao</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge badge-online-users">
+                                            <i class="fas fa-user me-1"></i> 12 người online
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chat-card-body">
+                                    <div class="user-avatar-group">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 1" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 2" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 3" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 4" class="user-avatar">
+                                        <div class="user-avatar d-flex align-items-center justify-content-center bg-light">
+                                            <small>+8</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <a href="#" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt me-1"></i> Tham gia ngay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 col-lg-4 room-card">
+                            <div class="card chat-card shadow-sm">
+                                <div class="chat-card-header position-relative">
+                                    <span class="position-absolute top-0 end-0 mt-2 me-2">
+                                        <i class="fas fa-lock text-white"></i>
+                                    </span>
+                                    <h5 class="mb-1">Business English</h5>
+                                    <p class="mb-2 small">Tiếng Anh trong môi trường kinh doanh</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge badge-online-users">
+                                            <i class="fas fa-user me-1"></i> 8 người online
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="chat-card-body">
+                                    <div class="user-avatar-group">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 1" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 2" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 3" class="user-avatar">
+                                        <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 4" class="user-avatar">
+                                        <div class="user-avatar d-flex align-items-center justify-content-center bg-light">
+                                            <small>+5</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <a href="#" class="btn btn-primary">
+                                            <i class="fas fa-sign-in-alt me-1"></i> Tham gia ngay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Create Room Card -->
+                        <div class="col-md-6 col-lg-4 room-card">
+                            <div class="card chat-card create-room-card shadow-sm" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                                <div class="create-room-icon">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <h5 class="mb-1">Tạo phòng riêng tư</h5>
+                                <p class="text-muted">Tạo phòng chat chỉ cho những người được mời</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- My Rooms Tab -->
+                <div class="tab-pane fade" id="my-tab-pane" role="tabpanel" aria-labelledby="my-tab" tabindex="0">
+                    <div class="row g-4">
+                        {% for room in rooms if room.creator_id == current_user.id %}
+                            <div class="col-md-6 col-lg-4 room-card">
+                                <div class="card chat-card shadow-sm">
+                                    <div class="chat-card-header position-relative">
+                                        {% if room.is_private %}
+                                            <span class="position-absolute top-0 end-0 mt-2 me-2">
+                                                <i class="fas fa-lock text-white"></i>
+                                            </span>
+                                        {% endif %}
+                                        <h5 class="mb-1">{{ room.name }}</h5>
+                                        <p class="mb-2 small">{{ room.description }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge badge-online-users">
+                                                <i class="fas fa-user me-1"></i> {{ 10 + loop.index * 3 }} người online
+                                            </span>
+                                            <span class="badge bg-warning text-dark">Phòng của bạn</span>
+                                        </div>
+                                    </div>
+                                    <div class="chat-card-body">
+                                        <div class="user-avatar-group">
+                                            <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 1" class="user-avatar">
+                                            <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 2" class="user-avatar">
+                                            <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 3" class="user-avatar">
+                                            <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" alt="User 4" class="user-avatar">
+                                            <div class="user-avatar d-flex align-items-center justify-content-center bg-light">
+                                                <small>+{{ 5 + loop.index * 2 }}</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="btn-group w-100">
+                                            <a href="{{ url_for('chat_room', room_id=room.id) }}" class="btn btn-primary">
+                                                <i class="fas fa-sign-in-alt me-1"></i> Vào phòng
+                                            </a>
+                                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editRoomModal{{ room.id }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Edit Room Modal -->
+                            <div class="modal fade" id="editRoomModal{{ room.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Chỉnh sửa phòng chat</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form>
+                                                <div class="mb-3">
+                                                    <label for="roomName{{ room.id }}" class="form-label">Tên phòng</label>
+                                                    <input type="text" class="form-control" id="roomName{{ room.id }}" value="{{ room.name }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="roomDescription{{ room.id }}" class="form-label">Mô tả</label>
+                                                    <textarea class="form-control" id="roomDescription{{ room.id }}" rows="3">{{ room.description }}</textarea>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="roomPrivate{{ room.id }}" {% if room.is_private %}checked{% endif %}>
+                                                        <label class="form-check-label" for="roomPrivate{{ room.id }}">
+                                                            Phòng riêng tư
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-danger me-auto" data-bs-toggle="modal" data-bs-target="#deleteRoomModal{{ room.id }}">
+                                                <i class="fas fa-trash me-1"></i> Xóa phòng
+                                            </button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            <button type="button" class="btn btn-primary">Lưu thay đổi</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Delete Room Modal -->
+                            <div class="modal fade" id="deleteRoomModal{{ room.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Xác nhận xóa</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Bạn có chắc chắn muốn xóa phòng chat "{{ room.name }}"?</p>
+                                            <p class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> Hành động này không thể khôi phục.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            <button type="button" class="btn btn-danger">Xóa phòng</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12">
+                                <div class="text-center py-5">
+                                    <i class="fas fa-comments text-muted" style="font-size: 4rem;"></i>
+                                    <p class="mt-3">Bạn chưa tạo phòng chat nào.</p>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                                        <i class="fas fa-plus-circle me-1"></i> Tạo phòng chat mới
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        {% if rooms|selectattr('creator_id', 'equalto', current_user.id)|list|length > 0 %}
+                            <!-- Create Room Card -->
+                            <div class="col-md-6 col-lg-4 room-card">
+                                <div class="card chat-card create-room-card shadow-sm" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                                    <div class="create-room-icon">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <h5 class="mb-1">Tạo phòng mới</h5>
+                                    <p class="text-muted">Tạo thêm phòng chat</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chat Guidelines Card -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle me-2 text-primary"></i>Quy định phòng chat</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex mb-3">
+                        <div class="chat-room-icon" style="background-color: var(--success-color);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div>
+                            <h5>Nên làm</h5>
+                            <ul class="mb-0">
+                                <li>Sử dụng tiếng Anh để giao tiếp</li>
+                                <li>Tôn trọng tất cả các thành viên</li>
+                                <li>Giúp đỡ người khác khi có thể</li>
+                                <li>Chia sẻ kinh nghiệm học tập</li>
+                                <li>Đưa ra phản hồi mang tính xây dựng</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex mb-3">
+                        <div class="chat-room-icon" style="background-color: var(--danger-color);">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div>
+                            <h5>Không nên làm</h5>
+                            <ul class="mb-0">
+                                <li>Sử dụng ngôn ngữ phản cảm hoặc xúc phạm</li>
+                                <li>Spam hoặc gửi tin nhắn lặp lại</li>
+                                <li>Chia sẻ thông tin cá nhân</li>
+                                <li>Quảng cáo hoặc quảng bá sản phẩm</li>
+                                <li>Gây rối hoặc phá hoại cuộc trò chuyện</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Room Modal -->
+<div class="modal fade" id="createRoomModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tạo phòng chat mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="newRoomName" class="form-label">Tên phòng <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="newRoomName" placeholder="Nhập tên phòng chat" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newRoomDescription" class="form-label">Mô tả</label>
+                        <textarea class="form-control" id="newRoomDescription" rows="3" placeholder="Mô tả về phòng chat này"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roomIcon" class="form-label">Icon phòng</label>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="roomIcon" id="icon1" checked>
+                                <label class="form-check-label" for="icon1">
+                                    <i class="fas fa-comments"></i>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="roomIcon" id="icon2">
+                                <label class="form-check-label" for="icon2">
+                                    <i class="fas fa-book"></i>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="roomIcon" id="icon3">
+                                <label class="form-check-label" for="icon3">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="roomIcon" id="icon4">
+                                <label class="form-check-label" for="icon4">
+                                    <i class="fas fa-globe"></i>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="roomIcon" id="icon5">
+                                <label class="form-check-label" for="icon5">
+                                    <i class="fas fa-microphone"></i>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="roomIcon" id="icon6">
+                                <label class="form-check-label" for="icon6">
+                                    <i class="fas fa-headphones"></i>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="roomIsPrivate">
+                            <label class="form-check-label" for="roomIsPrivate">
+                                Phòng riêng tư
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Phòng riêng tư chỉ hiển thị cho những người được mời.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary">Tạo phòng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchRoom');
+        const searchButton = document.getElementById('searchButton');
+        const roomCards = document.querySelectorAll('.room-card');
+        
+        function searchRooms() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                // Show all rooms if search term is empty
+                roomCards.forEach(card => {
+                    card.style.display = '';
+                });
+                return;
+            }
+            
+            roomCards.forEach(card => {
+                const roomName = card.querySelector('h5')?.textContent.toLowerCase() || '';
+                const roomDescription = card.querySelector('p')?.textContent.toLowerCase() || '';
+                
+                if (roomName.includes(searchTerm) || roomDescription.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        searchButton.addEventListener('click', searchRooms);
+        
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                searchRooms();
+            }
+        });
+        
+        // Room card hover effect
+        const chatCards = document.querySelectorAll('.chat-card:not(.create-room-card)');
+        
+        chatCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+            });
+        });
+    });
+</script>
+{% endblock %}
