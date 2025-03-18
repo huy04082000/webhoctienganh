@@ -1,0 +1,37 @@
+<footer class="sticky-footer bg-white mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h5 class="text-primary mb-4">AI English Learning</h5>
+                <p class="text-muted">
+                    Nền tảng học tiếng Anh thông minh sử dụng công nghệ AI để cá nhân hóa trải nghiệm học tập
+                    và giúp bạn đạt được mục tiêu ngôn ngữ của mình một cách hiệu quả nhất.
+                </p>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                <h5 class="text-primary mb-4">Liên kết</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="{{ url_for('dashboard') }}" class="text-muted">Trang chủ</a></li>
+                    <li class="mb-2"><a href="{{ url_for('courses') }}" class="text-muted">Khóa học</a></li>
+                    <li class="mb-2"><a href="{{ url_for('placement_test') }}" class="text-muted">Kiểm tra trình độ</a></li>
+                    <li class="mb-2"><a href="{{ url_for('profile') }}" class="text-muted">Hồ sơ cá nhân</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <h5 class="text-primary mb-4">Liên hệ</h5>
+                <p class="text-muted mb-2"><i class="fas fa-envelope me-2"></i> contact@aienglish.com</p>
+                <p class="text-muted mb-2"><i class="fas fa-phone me-2"></i> +84 123 456 789</p>
+                <div class="d-flex mt-4">
+                    <a href="#" class="me-3 text-primary"><i class="fab fa-facebook-f fa-lg"></i></a>
+                    <a href="#" class="me-3 text-primary"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="#" class="me-3 text-primary"><i class="fab fa-youtube fa-lg"></i></a>
+                    <a href="#" class="me-3 text-primary"><i class="fab fa-instagram fa-lg"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="copyright text-center my-3">
+            <span>Copyright &copy; AI English Learning {{ current_year }}</span>
+        </div>
+    </div>
+</footer>

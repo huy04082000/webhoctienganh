@@ -1,0 +1,32 @@
+<a class="dropdown-item notification-item {% if not notification.is_read %}unread{% endif %}" href="{{ url_for('read_notification', notification_id=notification.id) }}">
+    <div class="d-flex align-items-start">
+        <!-- Icon based on notification type -->
+        <div class="me-3">
+            {% if notification.type == 'system' %}
+                <i class="fas fa-cogs fa-2x text-gray-400"></i>
+            {% elif notification.type == 'course' %}
+                <i class="fas fa-book fa-2x text-primary"></i>
+            {% elif notification.type == 'test' %}
+                <i class="fas fa-tasks fa-2x text-success"></i>
+            {% elif notification.type == 'badge' %}
+                <i class="fas fa-award fa-2x text-warning"></i>
+            {% else %}
+                <i class="fas fa-bell fa-2x text-info"></i>
+            {% endif %}
+        </div>
+        
+        <!-- Notification content -->
+        <div>
+            <h6 class="font-weight-bold mb-1">{{ notification.title }}</h6>
+            <p class="small text-muted mb-0">{{ notification.content|truncate(80) }}</p>
+            <small class="text-muted">{{ notification.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+        </div>
+        
+        <!-- Unread indicator -->
+        {% if not notification.is_read %}
+            <span class="ms-auto">
+                <span class="badge rounded-pill bg-primary ms-auto">Mới</span>
+            </span>
+        {% endif %}
+    </div>
+</a>

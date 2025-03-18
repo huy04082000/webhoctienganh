@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+
+{% block title %}Huy hiệu - AI English Learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Huy hiệu</h1>
+    </div>
+    
+    <!-- Badge Stats Card -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="text-center">
+                        <div class="h1 mb-0 font-weight-bold text-primary">{{ earned_badge_ids|length if earned_badge_ids else 0 }}</div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Huy hiệu đã đạt được</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="text-center">
+                        <div class="h1 mb-0 font-weight-bold text-success">
+                            {% set percentage = (earned_badge_ids|length / badges|length * 100)|round|int if badges|length > 0 else 0 %}
+                            {{ percentage }}%
+                        </div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tỷ lệ hoàn thành</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="text-center">
+                        <div class="h1 mb-0 font-weight-bold text-info">{{ badges|length - earned_badge_ids|length }}</div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Còn lại</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="text-center">
+                        <div class="h1 mb-0 font-weight-bold text-warning">
+                            {% set next_badge = badges|selectattr('id', 'not in', earned_badge_ids)|first %}
+                            {% if next_badge %}
+                                {% if next_badge.requirement_type == 'points' %}
+                                    {{ next_badge.requirement_value - current_user.profile.total_points if current_user.profile else next_badge.requirement_value }} điểm
+                                {% elif next_badge.requirement_type == 'streak' %}
+                                    {{ next_badge.requirement_value - current_user.profile.study_streak if current_user.profile else next_badge.requirement_value }} ngày
+                                {% else %}
+                                    Sắp đạt
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Còn thiếu (Huy hiệu tiếp theo)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Badge Categories -->
+    <div class="mb-4">
+        <ul class="nav nav-tabs" id="badgeTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-badges" type="button" role="tab" aria-controls="all-badges" aria-selected="true">Tất cả</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="earned-tab" data-bs-toggle="tab" data-bs-target="#earned-badges" type="button" role="tab" aria-controls="earned-badges" aria-selected="false">Đã đạt</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="unearned-tab" data-bs-toggle="tab" data-bs-target="#unearned-badges" type="button" role="tab" aria-controls="unearned-badges" aria-selected="false">Chưa đạt</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="points-tab" data-bs-toggle="tab" data-bs-target="#points-badges" type="button" role="tab" aria-controls="points-badges" aria-selected="false">Điểm số</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="streak-tab" data-bs-toggle="tab" data-bs-target="#streak-badges" type="button" role="tab" aria-controls="streak-badges" aria-selected="false">Streak</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="achievements-tab" data-bs-toggle="tab" data-bs-target="#achievements-badges" type="button" role="tab" aria-controls="achievements-badges" aria-selected="false">Thành tích</button>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Badge Content -->
+    <div class="tab-content" id="badgeTabContent">
+        <!-- All Badges -->
+        <div class="tab-pane fade show active" id="all-badges" role="tabpanel" aria-labelledby="all-tab">
+            <div class="row">
+                {% for badge in badges %}
+                    <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
+                        <div class="card shadow h-100 {% if badge.id in earned_badge_ids %}border-success{% endif %}">
+                            <div class="card-body text-center">
+                                <div class="position-relative d-inline-block mb-3">
+                                    <img src="{{ url_for('static', filename='uploads/' + badge.image) }}" alt="{{ badge.name }}" class="img-fluid mb-2 {% if badge.id not in earned_badge_ids %}opacity-50{% endif %}" style="height: 80px;">
+                                    {% if badge.id in earned_badge_ids %}
+                                        <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-success p-2">
+                                            <i class="fas fa-check text-white"></i>
+                                        </span>
+                                    {% else %}
+                                        <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-secondary p-2">
+                                            <i class="fas fa-lock text-white"></i>
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <h5 class="card-title">{{ badge.name }}</h5>
+                                <p class="card-text small text-muted">{{ badge.description }}</p>
+                                <div class="mt-3">
+                                    {% if badge.requirement_type == 'points' %}
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-star me-1"></i> {{ badge.requirement_value }} điểm
+                                        </span>
+                                    {% elif badge.requirement_type == 'streak' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-fire me-1"></i> {{ badge.requirement_value }} ngày
+                                        </span>
+                                    {% elif badge.requirement_type == 'tests' %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-clipboard-list me-1"></i> {{ badge.requirement_value }} bài test
+                                        </span>
+                                    {% elif badge.requirement_type == 'courses' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-graduation-cap me-1"></i> {{ badge.requirement_value }} khóa học
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if badge.id in earned_badge_ids %}
+                                    {% set user_badge = user_badges|selectattr('badge_id', 'equalto', badge.id)|first %}
+                                    {% if user_badge %}
+                                        <small class="text-muted d-block mt-2">
+                                            Đạt được: {{ user_badge.earned_at.strftime('%d/%m/%Y') }}
+                                        </small>
+                                    {% endif %}
+                                {% else %}
+                                    {% if badge.requirement_type == 'points' and current_user.profile %}
+                                        <div class="progress mt-3" style="height: 5px;">
+                                            {% set progress = (current_user.profile.total_points / badge.requirement_value * 100)|round|int if badge.requirement_value > 0 else 0 %}
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ min(progress, 100) }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ current_user.profile.total_points }}/{{ badge.requirement_value }}</small>
+                                    {% elif badge.requirement_type == 'streak' and current_user.profile %}
+                                        <div class="progress mt-3" style="height: 5px;">
+                                            {% set progress = (current_user.profile.study_streak / badge.requirement_value * 100)|round|int if badge.requirement_value > 0 else 0 %}
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ min(progress, 100) }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ current_user.profile.study_streak }}/{{ badge.requirement_value }}</small>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Earned Badges -->
+        <div class="tab-pane fade" id="earned-badges" role="tabpanel" aria-labelledby="earned-tab">
+            <div class="row">
+                {% set earned_count = 0 %}
+                {% for badge in badges %}
+                    {% if badge.id in earned_badge_ids %}
+                        {% set earned_count = earned_count + 1 %}
+                        <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
+                            <div class="card shadow h-100 border-success">
+                                <div class="card-body text-center">
+                                    <div class="position-relative d-inline-block mb-3">
+                                        <img src="{{ url_for('static', filename='uploads/' + badge.image) }}" alt="{{ badge.name }}" class="img-fluid mb-2" style="height: 80px;">
+                                        <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-success p-2">
+                                            <i class="fas fa-check text-white"></i>
+                                        </span>
+                                    </div>
+                                    <h5 class="card-title">{{ badge.name }}</h5>
+                                    <p class="card-text small text-muted">{{ badge.description }}</p>
+                                    <div class="mt-3">
+                                        {% if badge.requirement_type == 'points' %}
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-star me-1"></i> {{ badge.requirement_value }} điểm
+                                            </span>
+                                        {% elif badge.requirement_type == 'streak' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-fire me-1"></i> {{ badge.requirement_value }} ngày
+                                            </span>
+                                        {% elif badge.requirement_type == 'tests' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-clipboard-list me-1"></i> {{ badge.requirement_value }} bài test
+                                            </span>
+                                        {% elif badge.requirement_type == 'courses' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-graduation-cap me-1"></i> {{ badge.requirement_value }} khóa học
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% set user_badge = user_badges|selectattr('badge_id', 'equalto', badge.id)|first %}
+                                    {% if user_badge %}
+                                        <small class="text-muted d-block mt-2">
+                                            Đạt được: {{ user_badge.earned_at.strftime('%d/%m/%Y') }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if earned_count == 0 %}
+                    <div class="col-12">
+                        <div class="card shadow">
+                            <div class="card-body text-center py-5">
+                                <i class="fas fa-trophy fa-4x text-gray-300 mb-3"></i>
+                                <h5 class="text-gray-800">Bạn chưa có huy hiệu nào</h5>
+                                <p class="text-muted">Hãy tích cực học tập để đạt được các huy hiệu!</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Unearned Badges -->
+        <div class="tab-pane fade" id="unearned-badges" role="tabpanel" aria-labelledby="unearned-tab">
+            <div class="row">
+                {% set unearned_count = 0 %}
+                {% for badge in badges %}
+                    {% if badge.id not in earned_badge_ids %}
+                        {% set unearned_count = unearned_count + 1 %}
+                        <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
+                            <div class="card shadow h-100">
+                                <div class="card-body text-center">
+                                    <div class="position-relative d-inline-block mb-3">
+                                        <img src="{{ url_for('static', filename='uploads/' + badge.image) }}" alt="{{ badge.name }}" class="img-fluid mb-2 opacity-50" style="height: 80px;">
+                                        <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-secondary p-2">
+                                            <i class="fas fa-lock text-white"></i>
+                                        </span>
+                                    </div>
+                                    <h5 class="card-title">{{ badge.name }}</h5>
+                                    <p class="card-text small text-muted">{{ badge.description }}</p>
+                                    <div class="mt-3">
+                                        {% if badge.requirement_type == 'points' %}
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-star me-1"></i> {{ badge.requirement_value }} điểm
+                                            </span>
+                                        {% elif badge.requirement_type == 'streak' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-fire me-1"></i> {{ badge.requirement_value }} ngày
+                                            </span>
+                                        {% elif badge.requirement_type == 'tests' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-clipboard-list me-1"></i> {{ badge.requirement_value }} bài test
+                                            </span>
+                                        {% elif badge.requirement_type == 'courses' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-graduation-cap me-1"></i> {{ badge.requirement_value }} khóa học
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if badge.requirement_type == 'points' and current_user.profile %}
+                                        <div class="progress mt-3" style="height: 5px;">
+                                            {% set progress = (current_user.profile.total_points / badge.requirement_value * 100)|round|int if badge.requirement_value > 0 else 0 %}
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ min(progress, 100) }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ current_user.profile.total_points }}/{{ badge.requirement_value }}</small>
+                                    {% elif badge.requirement_type == 'streak' and current_user.profile %}
+                                        <div class="progress mt-3" style="height: 5px;">
+                                            {% set progress = (current_user.profile.study_streak / badge.requirement_value * 100)|round|int if badge.requirement_value > 0 else 0 %}
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ min(progress, 100) }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ current_user.profile.study_streak }}/{{ badge.requirement_value }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if unearned_count == 0 %}
+                    <div class="col-12">
+                        <div class="card shadow">
+                            <div class="card-body text-center py-5">
+                                <i class="fas fa-medal fa-4x text-success mb-3"></i>
+                                <h5 class="text-gray-800">Chúc mừng! Bạn đã đạt được tất cả huy hiệu</h5>
+                                <p class="text-muted">Bạn đã hoàn thành toàn bộ thử thách. Hãy chờ các huy hiệu mới!</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Points Badges -->
+        <div class="tab-pane fade" id="points-badges" role="tabpanel" aria-labelledby="points-tab">
+            <div class="row">
+                {% set points_count = 0 %}
+                {% for badge in badges %}
+                    {% if badge.requirement_type == 'points' %}
+                        {% set points_count = points_count + 1 %}
+                        <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
+                            <div class="card shadow h-100 {% if badge.id in earned_badge_ids %}border-success{% endif %}">
+                                <div class="card-body text-center">
+                                    <div class="position-relative d-inline-block mb-3">
+                                        <img src="{{ url_for('static', filename='uploads/' + badge.image) }}" alt="{{ badge.name }}" class="img-fluid mb-2 {% if badge.id not in earned_badge_ids %}opacity-50{% endif %}" style="height: 80px;">
+                                        {% if badge.id in earned_badge_ids %}
+                                            <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-success p-2">
+                                                <i class="fas fa-check text-white"></i>
+                                            </span>
+                                        {% else %}
+                                            <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-secondary p-2">
+                                                <i class="fas fa-lock text-white"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <h5 class="card-title">{{ badge.name }}</h5>
+                                    <p class="card-text small text-muted">{{ badge.description }}</p>
+                                    <div class="mt-3">
+                                        <span class="badge bg-primary">
+                                            <i class="fas fa-star me-1"></i> {{ badge.requirement_value }} điểm
+                                        </span>
+                                    </div>
+                                    
+                                    {% if badge.id in earned_badge_ids %}
+                                        {% set user_badge = user_badges|selectattr('badge_id', 'equalto', badge.id)|first %}
+                                        {% if user_badge %}
+                                            <small class="text-muted d-block mt-2">
+                                                Đạt được: {{ user_badge.earned_at.strftime('%d/%m/%Y') }}
+                                            </small>
+                                        {% endif %}
+                                    {% elif current_user.profile %}
+                                        <div class="progress mt-3" style="height: 5px;">
+                                            {% set progress = (current_user.profile.total_points / badge.requirement_value * 100)|round|int if badge.requirement_value > 0 else 0 %}
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ min(progress, 100) }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ current_user.profile.total_points }}/{{ badge.requirement_value }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if points_count == 0 %}
+                    <div class="col-12">
+                        <div class="card shadow">
+                            <div class="card-body text-center py-5">
+                                <i class="fas fa-star fa-4x text-gray-300 mb-3"></i>
+                                <h5 class="text-gray-800">Không có huy hiệu điểm số</h5>
+                                <p class="text-muted">Hiện chưa có huy hiệu nào thuộc danh mục này</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Streak Badges -->
+        <div class="tab-pane fade" id="streak-badges" role="tabpanel" aria-labelledby="streak-tab">
+            <div class="row">
+                {% set streak_count = 0 %}
+                {% for badge in badges %}
+                    {% if badge.requirement_type == 'streak' %}
+                        {% set streak_count = streak_count + 1 %}
+                        <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
+                            <div class="card shadow h-100 {% if badge.id in earned_badge_ids %}border-success{% endif %}">
+                                <div class="card-body text-center">
+                                    <div class="position-relative d-inline-block mb-3">
+                                        <img src="{{ url_for('static', filename='uploads/' + badge.image) }}" alt="{{ badge.name }}" class="img-fluid mb-2 {% if badge.id not in earned_badge_ids %}opacity-50{% endif %}" style="height: 80px;">
+                                        {% if badge.id in earned_badge_ids %}
+                                            <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-success p-2">
+                                                <i class="fas fa-check text-white"></i>
+                                            </span>
+                                        {% else %}
+                                            <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-secondary p-2">
+                                                <i class="fas fa-lock text-white"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <h5 class="card-title">{{ badge.name }}</h5>
+                                    <p class="card-text small text-muted">{{ badge.description }}</p>
+                                    <div class="mt-3">
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-fire me-1"></i> {{ badge.requirement_value }} ngày
+                                        </span>
+                                    </div>
+                                    
+                                    {% if badge.id in earned_badge_ids %}
+                                        {% set user_badge = user_badges|selectattr('badge_id', 'equalto', badge.id)|first %}
+                                        {% if user_badge %}
+                                            <small class="text-muted d-block mt-2">
+                                                Đạt được: {{ user_badge.earned_at.strftime('%d/%m/%Y') }}
+                                            </small>
+                                        {% endif %}
+                                    {% elif current_user.profile %}
+                                        <div class="progress mt-3" style="height: 5px;">
+                                            {% set progress = (current_user.profile.study_streak / badge.requirement_value * 100)|round|int if badge.requirement_value > 0 else 0 %}
+                                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ min(progress, 100) }}%"></div>
+                                        </div>
+                                        <small class="text-muted">{{ current_user.profile.study_streak }}/{{ badge.requirement_value }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if streak_count == 0 %}
+                    <div class="col-12">
+                        <div class="card shadow">
+                            <div class="card-body text-center py-5">
+                                <i class="fas fa-fire fa-4x text-gray-300 mb-3"></i>
+                                <h5 class="text-gray-800">Không có huy hiệu streak</h5>
+                                <p class="text-muted">Hiện chưa có huy hiệu nào thuộc danh mục này</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Achievement Badges -->
+        <div class="tab-pane fade" id="achievements-badges" role="tabpanel" aria-labelledby="achievements-tab">
+            <div class="row">
+                {% set achievement_count = 0 %}
+                {% for badge in badges %}
+                    {% if badge.requirement_type == 'tests' or badge.requirement_type == 'courses' %}
+                        {% set achievement_count = achievement_count + 1 %}
+                        <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
+                            <div class="card shadow h-100 {% if badge.id in earned_badge_ids %}border-success{% endif %}">
+                                <div class="card-body text-center">
+                                    <div class="position-relative d-inline-block mb-3">
+                                        <img src="{{ url_for('static', filename='uploads/' + badge.image) }}" alt="{{ badge.name }}" class="img-fluid mb-2 {% if badge.id not in earned_badge_ids %}opacity-50{% endif %}" style="height: 80px;">
+                                        {% if badge.id in earned_badge_ids %}
+                                            <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-success p-2">
+                                                <i class="fas fa-check text-white"></i>
+                                            </span>
+                                        {% else %}
+                                            <span class="position-absolute bottom-0 end-0 badge rounded-circle bg-secondary p-2">
+                                                <i class="fas fa-lock text-white"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <h5 class="card-title">{{ badge.name }}</h5>
+                                    <p class="card-text small text-muted">{{ badge.description }}</p>
+                                    <div class="mt-3">
+                                        {% if badge.requirement_type == 'tests' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-clipboard-list me-1"></i> {{ badge.requirement_value }} bài test
+                                            </span>
+                                        {% elif badge.requirement_type == 'courses' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-graduation-cap me-1"></i> {{ badge.requirement_value }} khóa học
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% if badge.id in earned_badge_ids %}
+                                        {% set user_badge = user_badges|selectattr('badge_id', 'equalto', badge.id)|first %}
+                                        {% if user_badge %}
+                                            <small class="text-muted d-block mt-2">
+                                                Đạt được: {{ user_badge.earned_at.strftime('%d/%m/%Y') }}
+                                            </small>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if achievement_count == 0 %}
+                    <div class="col-12">
+                        <div class="card shadow">
+                            <div class="card-body text-center py-5">
+                                <i class="fas fa-certificate fa-4x text-gray-300 mb-3"></i>
+                                <h5 class="text-gray-800">Không có huy hiệu thành tích</h5>
+                                <p class="text-muted">Hiện chưa có huy hiệu nào thuộc danh mục này</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

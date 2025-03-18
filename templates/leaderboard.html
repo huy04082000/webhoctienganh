@@ -1,794 +1,290 @@
 {% extends "base.html" %}
 
-{% block title %}Bảng xếp hạng - VietEnglish{% endblock %}
-
-{% block extra_css %}
-<style>
-    .leaderboard-card {
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        border: none;
-    }
-    
-    .leaderboard-header {
-        background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-        color: white;
-        padding: 30px;
-        text-align: center;
-    }
-    
-    .rank-card {
-        border-radius: 10px;
-        overflow: hidden;
-        transition: all 0.3s;
-        margin-bottom: 15px;
-        border: none;
-    }
-    
-    .rank-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    }
-    
-    .user-rank {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        font-weight: bold;
-        font-size: 1.2rem;
-    }
-    
-    .rank-1 {
-        background-color: #FFD700;
-        color: #212529;
-    }
-    
-    .rank-2 {
-        background-color: #C0C0C0;
-        color: #212529;
-    }
-    
-    .rank-3 {
-        background-color: #CD7F32;
-        color: white;
-    }
-    
-    .current-user-row {
-        background-color: rgba(67, 97, 238, 0.1);
-        border-left: 3px solid var(--primary-color);
-    }
-    
-    .achievement-card {
-        position: relative;
-        height: 100%;
-    }
-    
-    .achievement-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1171&q=80');
-        background-size: cover;
-        background-position: center;
-        border-radius: 10px;
-        z-index: -1;
-    }
-    
-    .achievement-icon {
-        font-size: 2.5rem;
-        color: #FFD700;
-        margin-bottom: 15px;
-    }
-    
-    .tab-pane {
-        animation: fadeIn 0.5s ease;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    .time-filter .btn {
-        border-radius: 20px;
-    }
-    
-    .badge-level {
-        border-radius: 20px;
-        padding: 5px 10px;
-        font-weight: normal;
-    }
-    
-    .progress-percentage {
-        width: 50px;
-        text-align: right;
-    }
-    
-    .streak-badge {
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        background-color: rgba(247, 37, 133, 0.1);
-        color: var(--warning-color);
-        font-size: 0.9rem;
-    }
-    
-    .achievements-row {
-        height: 220px;
-    }
-</style>
-{% endblock %}
+{% block title %}Bảng xếp hạng - AI English Learning{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4 align-items-center">
-        <div class="col-lg-8">
-            <h1 class="mb-0">
-                <i class="fas fa-trophy me-2 text-warning"></i>Bảng xếp hạng
-            </h1>
-            <p class="lead text-muted mt-2">Cùng theo dõi thành tích học tập của bạn và cộng đồng</p>
-        </div>
-        <div class="col-lg-4 time-filter text-lg-end">
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-primary active" id="weeklyBtn">Tuần này</button>
-                <button type="button" class="btn btn-outline-primary" id="monthlyBtn">Tháng này</button>
-                <button type="button" class="btn btn-outline-primary" id="allTimeBtn">Tất cả</button>
-            </div>
-        </div>
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Bảng xếp hạng</h1>
     </div>
-
-    <div class="row mb-4 achievements-row">
-        <!-- Top Achievements -->
-        <div class="col-md-4 mb-3 mb-md-0">
-            <div class="card achievement-card text-white">
-                <div class="card-body p-4 text-center">
-                    <div class="achievement-icon">
-                        <i class="fas fa-crown"></i>
+    
+    <!-- Filters -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="timeRange" class="form-label">Thời gian</label>
+                        <select class="form-select" id="timeRange">
+                            <option value="all-time" selected>Tất cả thời gian</option>
+                            <option value="this-week">Tuần này</option>
+                            <option value="this-month">Tháng này</option>
+                        </select>
                     </div>
-                    <h4 class="card-title">Điểm tổng kết</h4>
-                    <div class="display-5 fw-bold mb-3">10,540</div>
-                    <p class="card-text mb-0">Điểm tổng kết cao nhất</p>
-                    <h5 class="mt-2">Nguyễn Văn A</h5>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3 mb-md-0">
-            <div class="card achievement-card text-white">
-                <div class="card-body p-4 text-center">
-                    <div class="achievement-icon">
-                        <i class="fas fa-fire"></i>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="filterLevel" class="form-label">Cấp độ</label>
+                        <select class="form-select" id="filterLevel">
+                            <option value="all" selected>Tất cả cấp độ</option>
+                            <option value="a1">Beginner (A1)</option>
+                            <option value="a2">Elementary (A2)</option>
+                            <option value="b1">Intermediate (B1)</option>
+                            <option value="b2">Upper Intermediate (B2)</option>
+                            <option value="c1">Advanced (C1)</option>
+                            <option value="c2">Proficient (C2)</option>
+                        </select>
                     </div>
-                    <h4 class="card-title">Ngày liên tục</h4>
-                    <div class="display-5 fw-bold mb-3">365</div>
-                    <p class="card-text mb-0">Chuỗi ngày học dài nhất</p>
-                    <h5 class="mt-2">Trần Thị B</h5>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3 mb-md-0">
-            <div class="card achievement-card text-white">
-                <div class="card-body p-4 text-center">
-                    <div class="achievement-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <h4 class="card-title">Khóa học</h4>
-                    <div class="display-5 fw-bold mb-3">27</div>
-                    <p class="card-text mb-0">Nhiều khóa học nhất</p>
-                    <h5 class="mt-2">Lê Văn C</h5>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="row">
-        <!-- Leaderboard Tabs -->
-        <div class="col-md-8 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header p-0">
-                    <ul class="nav nav-tabs card-header-tabs" id="leaderboardTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="points-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#points-tab-pane" type="button" role="tab" 
-                                    aria-controls="points-tab-pane" aria-selected="true">
-                                <i class="fas fa-star me-1"></i> Điểm số
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="streak-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#streak-tab-pane" type="button" role="tab" 
-                                    aria-controls="streak-tab-pane" aria-selected="false">
-                                <i class="fas fa-fire me-1"></i> Ngày liên tục
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="courses-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#courses-tab-pane" type="button" role="tab" 
-                                    aria-controls="courses-tab-pane" aria-selected="false">
-                                <i class="fas fa-book me-1"></i> Khóa học
-                            </button>
-                        </li>
-                    </ul>
+    
+    <!-- Your Current Rank Card -->
+    <div class="card shadow mb-4 card-accent-primary">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-auto text-center mb-3 mb-md-0">
+                    <div class="rounded-circle border border-primary d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <span class="h1 text-primary mb-0">#{{ current_rank }}</span>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="tab-content" id="leaderboardTabContent">
-                        <!-- Points Tab -->
-                        <div class="tab-pane fade show active" id="points-tab-pane" role="tabpanel" aria-labelledby="points-tab" tabindex="0">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col" width="60">#</th>
-                                            <th scope="col">Học viên</th>
-                                            <th scope="col">Trình độ</th>
-                                            <th scope="col" class="text-end">Điểm số</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for user, profile in top_users %}
-                                            <tr {% if user.id == current_user.id %}class="current-user-row"{% endif %}>
-                                                <td>
-                                                    <div class="user-rank {% if loop.index <= 3 %}rank-{{ loop.index }}{% else %}bg-light{% endif %}">
-                                                        {{ loop.index }}
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" 
-                                                             alt="{{ user.username }}" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                        <div>
-                                                            <h6 class="mb-0">{{ user.fullname if user.fullname else user.username }}</h6>
-                                                            <small class="text-muted">@{{ user.username }}</small>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    {% if profile.language_level %}
-                                                        <span class="badge bg-primary badge-level">
-                                                            {{ profile.language_level }}
-                                                        </span>
-                                                    {% else %}
-                                                        <span class="badge bg-secondary badge-level">Chưa xác định</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td class="text-end fw-bold">{{ profile.total_points }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        
-                        <!-- Streak Tab -->
-                        <div class="tab-pane fade" id="streak-tab-pane" role="tabpanel" aria-labelledby="streak-tab" tabindex="0">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col" width="60">#</th>
-                                            <th scope="col">Học viên</th>
-                                            <th scope="col">Trình độ</th>
-                                            <th scope="col" class="text-end">Ngày liên tục</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Example of streak data -->
-                                        <tr>
-                                            <td>
-                                                <div class="user-rank rank-1">
-                                                    1
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Trần Thị B</h6>
-                                                        <small class="text-muted">@tranthi_b</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Advanced (C1)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">365 <i class="fas fa-fire text-danger ms-1"></i></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="user-rank rank-2">
-                                                    2
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Phạm Văn D</h6>
-                                                        <small class="text-muted">@phvan_d</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Upper Intermediate (B2)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">290 <i class="fas fa-fire text-danger ms-1"></i></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="user-rank rank-3">
-                                                    3
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Hoàng Thị E</h6>
-                                                        <small class="text-muted">@hoang_e</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Intermediate (B1)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">250 <i class="fas fa-fire text-danger ms-1"></i></td>
-                                        </tr>
-                                        <tr {% if current_user.username == 'student' %}class="current-user-row"{% endif %}>
-                                            <td>
-                                                <div class="user-rank bg-light">
-                                                    4
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Học viên (Bạn)</h6>
-                                                        <small class="text-muted">@student</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Elementary (A2)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">120 <i class="fas fa-fire text-danger ms-1"></i></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="user-rank bg-light">
-                                                    5
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Lý Thị F</h6>
-                                                        <small class="text-muted">@lythi_f</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Beginner (A1)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">90 <i class="fas fa-fire text-danger ms-1"></i></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        
-                        <!-- Courses Tab -->
-                        <div class="tab-pane fade" id="courses-tab-pane" role="tabpanel" aria-labelledby="courses-tab" tabindex="0">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col" width="60">#</th>
-                                            <th scope="col">Học viên</th>
-                                            <th scope="col">Trình độ</th>
-                                            <th scope="col" class="text-end">Khóa học hoàn thành</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Example of courses data -->
-                                        <tr>
-                                            <td>
-                                                <div class="user-rank rank-1">
-                                                    1
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Lê Văn C</h6>
-                                                        <small class="text-muted">@levan_c</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Proficient (C2)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">27 <i class="fas fa-book-open text-success ms-1"></i></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="user-rank rank-2">
-                                                    2
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Nguyễn Văn A</h6>
-                                                        <small class="text-muted">@nguyenvan_a</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Advanced (C1)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">24 <i class="fas fa-book-open text-success ms-1"></i></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="user-rank rank-3">
-                                                    3
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Vũ Thị G</h6>
-                                                        <small class="text-muted">@vuthi_g</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Upper Intermediate (B2)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">20 <i class="fas fa-book-open text-success ms-1"></i></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="user-rank bg-light">
-                                                    4
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Đỗ Thị H</h6>
-                                                        <small class="text-muted">@dothi_h</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Intermediate (B1)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">18 <i class="fas fa-book-open text-success ms-1"></i></td>
-                                        </tr>
-                                        <tr {% if current_user.username == 'student' %}class="current-user-row"{% endif %}>
-                                            <td>
-                                                <div class="user-rank bg-light">
-                                                    8
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                                         alt="User" class="avatar me-2" style="width: 40px; height: 40px;">
-                                                    <div>
-                                                        <h6 class="mb-0">Học viên (Bạn)</h6>
-                                                        <small class="text-muted">@student</small>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-primary badge-level">Elementary (A2)</span>
-                                            </td>
-                                            <td class="text-end fw-bold">5 <i class="fas fa-book-open text-success ms-1"></i></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                <div class="col-md">
+                    <h5 class="mb-1">Hạng của bạn</h5>
+                    <div class="d-flex align-items-center">
+                        <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        <div>
+                            <h6 class="mb-0">{{ current_user.fullname }}</h6>
+                            <div class="d-flex align-items-center">
+                                <span class="text-primary me-2">{{ current_user.profile.total_points if current_user.profile else 0 }} điểm</span>
+                                {% if current_user.profile and current_user.profile.language_level %}
+                                    <span class="badge text-white 
+                                        {% if current_user.profile.language_level == 'Beginner (A1)' %}badge-a1
+                                        {% elif current_user.profile.language_level == 'Elementary (A2)' %}badge-a2
+                                        {% elif current_user.profile.language_level == 'Intermediate (B1)' %}badge-b1
+                                        {% elif current_user.profile.language_level == 'Upper Intermediate (B2)' %}badge-b2
+                                        {% elif current_user.profile.language_level == 'Advanced (C1)' %}badge-c1
+                                        {% elif current_user.profile.language_level == 'Proficient (C2)' %}badge-c2
+                                        {% endif %}">
+                                        {{ current_user.profile.language_level }}
+                                    </span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Sidebar -->
-        <div class="col-md-4">
-            <!-- Your Ranking -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-medal me-2 text-warning"></i>Xếp hạng của bạn</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-4">
-                        <div class="user-rank {% if current_rank <= 3 %}rank-{{ current_rank }}{% else %}bg-light{% endif %} me-3">
-                            {{ current_rank }}
+                <div class="col-md-auto">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Streak</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ current_user.profile.study_streak if current_user.profile else 0 }} ngày
+                            </div>
                         </div>
                         <div>
-                            <h5 class="mb-1">{{ current_user.fullname if current_user.fullname else current_user.username }}</h5>
-                            <span class="badge bg-primary badge-level">
-                                {% if current_user.profile and current_user.profile.language_level %}
-                                    {{ current_user.profile.language_level }}
-                                {% else %}
-                                    Chưa xác định
-                                {% endif %}
-                            </span>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Bài tập</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {% set completed_exercises = current_user.exercise_submissions|length if current_user.exercise_submissions is defined else 0 %}
+                                {{ completed_exercises }}
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span>Điểm số</span>
-                            <span class="text-primary fw-bold">
-                                {% if current_user.profile %}{{ current_user.profile.total_points }}{% else %}0{% endif %}
-                            </span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: 70%" 
-                                 aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <small class="text-muted">Cần thêm 150 điểm để lên hạng</small>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span>Ngày liên tục</span>
-                            <span class="text-danger fw-bold">
-                                {% if current_user.profile %}{{ current_user.profile.study_streak }}{% else %}0{% endif %}
-                            </span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: 60%" 
-                                 aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <small class="text-muted">Đạt 80 ngày để nhận huy hiệu</small>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span>Khóa học hoàn thành</span>
-                            <span class="text-success fw-bold">5</span>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 50%" 
-                                 aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <small class="text-muted">Hoàn thành thêm 5 khóa học để lên hạng</small>
-                    </div>
-                    
-                    <div class="d-grid mt-4">
-                        <a href="{{ url_for('courses') }}" class="btn btn-primary">
-                            <i class="fas fa-graduation-cap me-1"></i> Học thêm khóa học
-                        </a>
                     </div>
                 </div>
             </div>
-            
-            <!-- Top Performers This Week -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-crown me-2 text-warning"></i>Xuất sắc tuần này</h5>
+        </div>
+    </div>
+    
+    <!-- Top 3 Users -->
+    <div class="row mb-4">
+        <!-- Second Place -->
+        <div class="col-lg-4 mb-4">
+            {% if top_users|length > 1 %}
+                {% set second_user = top_users[1][0] %}
+                {% set second_profile = top_users[1][1] %}
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <div class="position-relative d-inline-block mb-3">
+                            <img src="{{ url_for('static', filename='uploads/' + second_user.avatar) }}" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                            <div class="position-absolute bottom-0 end-0 bg-silver rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border: 2px solid white;">
+                                <span class="h5 mb-0 text-white">#2</span>
+                            </div>
+                        </div>
+                        <h5 class="mb-1">{{ second_user.fullname }}</h5>
+                        <p class="text-primary mb-2">{{ second_profile.total_points }} điểm</p>
+                        {% if second_profile.language_level %}
+                            <span class="badge text-white 
+                                {% if second_profile.language_level == 'Beginner (A1)' %}badge-a1
+                                {% elif second_profile.language_level == 'Elementary (A2)' %}badge-a2
+                                {% elif second_profile.language_level == 'Intermediate (B1)' %}badge-b1
+                                {% elif second_profile.language_level == 'Upper Intermediate (B2)' %}badge-b2
+                                {% elif second_profile.language_level == 'Advanced (C1)' %}badge-c1
+                                {% elif second_profile.language_level == 'Proficient (C2)' %}badge-c2
+                                {% endif %}">
+                                {{ second_profile.language_level }}
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <div class="user-rank rank-1">1</div>
-                                </div>
-                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                     alt="User" class="avatar me-3" style="width: 40px; height: 40px;">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Nguyễn Văn A</h6>
-                                    <small class="text-muted">Advanced (C1)</small>
-                                </div>
-                                <div class="text-primary fw-bold">+840</div>
+            {% endif %}
+        </div>
+        
+        <!-- First Place -->
+        <div class="col-lg-4 mb-4">
+            {% if top_users|length > 0 %}
+                {% set first_user = top_users[0][0] %}
+                {% set first_profile = top_users[0][1] %}
+                <div class="card shadow border-warning h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-crown fa-3x text-warning mb-2"></i>
+                        </div>
+                        <div class="position-relative d-inline-block mb-3">
+                            <img src="{{ url_for('static', filename='uploads/' + first_user.avatar) }}" class="rounded-circle border border-warning" style="width: 120px; height: 120px; object-fit: cover;">
+                            <div class="position-absolute bottom-0 end-0 bg-warning rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border: 2px solid white;">
+                                <span class="h5 mb-0 text-white">#1</span>
                             </div>
-                        </li>
-                        <li class="list-group-item">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <div class="user-rank rank-2">2</div>
-                                </div>
-                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                     alt="User" class="avatar me-3" style="width: 40px; height: 40px;">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Trần Thị B</h6>
-                                    <small class="text-muted">Advanced (C1)</small>
-                                </div>
-                                <div class="text-primary fw-bold">+750</div>
+                        </div>
+                        <h4 class="mb-1">{{ first_user.fullname }}</h4>
+                        <p class="text-primary fw-bold mb-2">{{ first_profile.total_points }} điểm</p>
+                        {% if first_profile.language_level %}
+                            <span class="badge text-white 
+                                {% if first_profile.language_level == 'Beginner (A1)' %}badge-a1
+                                {% elif first_profile.language_level == 'Elementary (A2)' %}badge-a2
+                                {% elif first_profile.language_level == 'Intermediate (B1)' %}badge-b1
+                                {% elif first_profile.language_level == 'Upper Intermediate (B2)' %}badge-b2
+                                {% elif first_profile.language_level == 'Advanced (C1)' %}badge-c1
+                                {% elif first_profile.language_level == 'Proficient (C2)' %}badge-c2
+                                {% endif %}">
+                                {{ first_profile.language_level }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Third Place -->
+        <div class="col-lg-4 mb-4">
+            {% if top_users|length > 2 %}
+                {% set third_user = top_users[2][0] %}
+                {% set third_profile = top_users[2][1] %}
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <div class="position-relative d-inline-block mb-3">
+                            <img src="{{ url_for('static', filename='uploads/' + third_user.avatar) }}" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                            <div class="position-absolute bottom-0 end-0 bg-bronze rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px; border: 2px solid white;">
+                                <span class="h5 mb-0 text-white">#3</span>
                             </div>
-                        </li>
-                        <li class="list-group-item">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <div class="user-rank rank-3">3</div>
-                                </div>
-                                <img src="{{ url_for('static', filename='uploads/default_avatar.png') }}" 
-                                     alt="User" class="avatar me-3" style="width: 40px; height: 40px;">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Lê Văn C</h6>
-                                    <small class="text-muted">Proficient (C2)</small>
-                                </div>
-                                <div class="text-primary fw-bold">+720</div>
-                            </div>
-                        </li>
-                        <li class="list-group-item">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <div class="streak-badge">
-                                        <i class="fas fa-fire"></i>
+                        </div>
+                        <h5 class="mb-1">{{ third_user.fullname }}</h5>
+                        <p class="text-primary mb-2">{{ third_profile.total_points }} điểm</p>
+                        {% if third_profile.language_level %}
+                            <span class="badge text-white 
+                                {% if third_profile.language_level == 'Beginner (A1)' %}badge-a1
+                                {% elif third_profile.language_level == 'Elementary (A2)' %}badge-a2
+                                {% elif third_profile.language_level == 'Intermediate (B1)' %}badge-b1
+                                {% elif third_profile.language_level == 'Upper Intermediate (B2)' %}badge-b2
+                                {% elif third_profile.language_level == 'Advanced (C1)' %}badge-c1
+                                {% elif third_profile.language_level == 'Proficient (C2)' %}badge-c2
+                                {% endif %}">
+                                {{ third_profile.language_level }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Leaderboard Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Top 10 học viên</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col" style="width: 80px;">Hạng</th>
+                            <th scope="col">Học viên</th>
+                            <th scope="col">Trình độ</th>
+                            <th scope="col">Streak</th>
+                            <th scope="col">Tổng điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user, profile in top_users %}
+                            <tr class="{% if user.id == current_user.id %}table-primary{% endif %}">
+                                <td class="text-center">
+                                    {% if loop.index == 1 %}
+                                        <span class="badge bg-warning rounded-pill">#{{ loop.index }}</span>
+                                    {% elif loop.index == 2 %}
+                                        <span class="badge bg-secondary rounded-pill">#{{ loop.index }}</span>
+                                    {% elif loop.index == 3 %}
+                                        <span class="badge bg-danger rounded-pill">#{{ loop.index }}</span>
+                                    {% else %}
+                                        <span class="text-muted">#{{ loop.index }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                        <span>{{ user.fullname }}</span>
                                     </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Hoàng Thị E</h6>
-                                    <small class="text-muted">Intermediate (B1)</small>
-                                </div>
-                                <div class="text-danger fw-bold">30 ngày</div>
-                            </div>
-                        </li>
-                        <li class="list-group-item">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <div class="streak-badge" style="background-color: rgba(76, 201, 240, 0.1); color: var(--success-color);">
-                                        <i class="fas fa-book"></i>
+                                </td>
+                                <td>
+                                    {% if profile.language_level %}
+                                        <span class="badge text-white 
+                                            {% if profile.language_level == 'Beginner (A1)' %}badge-a1
+                                            {% elif profile.language_level == 'Elementary (A2)' %}badge-a2
+                                            {% elif profile.language_level == 'Intermediate (B1)' %}badge-b1
+                                            {% elif profile.language_level == 'Upper Intermediate (B2)' %}badge-b2
+                                            {% elif profile.language_level == 'Advanced (C1)' %}badge-c1
+                                            {% elif profile.language_level == 'Proficient (C2)' %}badge-c2
+                                            {% endif %}">
+                                            {{ profile.language_level }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-fire text-danger me-2"></i>
+                                        <span>{{ profile.study_streak }} ngày</span>
                                     </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Đỗ Thị H</h6>
-                                    <small class="text-muted">Intermediate (B1)</small>
-                                </div>
-                                <div class="text-success fw-bold">3 khóa học</div>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- Weekly Challenges -->
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-flag-checkered me-2 text-danger"></i>Thử thách tuần</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <h6 class="mb-2"><i class="fas fa-fire text-danger me-1"></i> Học 7 ngày liên tục</h6>
-                        <div class="progress mb-2" style="height: 8px;">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: 70%" 
-                                 aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">5/7 ngày</small>
-                            <span class="badge bg-warning">+50 điểm</span>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="mb-2"><i class="fas fa-book-open text-primary me-1"></i> Hoàn thành 10 bài học</h6>
-                        <div class="progress mb-2" style="height: 8px;">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: 40%" 
-                                 aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">4/10 bài học</small>
-                            <span class="badge bg-warning">+100 điểm</span>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="mb-2"><i class="fas fa-microphone text-success me-1"></i> Thực hành nói 30 phút</h6>
-                        <div class="progress mb-2" style="height: 8px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 20%" 
-                                 aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">6/30 phút</small>
-                            <span class="badge bg-warning">+80 điểm</span>
-                        </div>
-                    </div>
-                    
-                    <a href="#" class="btn btn-outline-primary w-100">
-                        <i class="fas fa-trophy me-1"></i> Xem tất cả thử thách
-                    </a>
-                </div>
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold">{{ profile.total_points }} điểm</div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+
+{% block extra_css %}
+<style>
+    .bg-silver {
+        background-color: #A9A9A9 !important;
+    }
+    
+    .bg-bronze {
+        background-color: #CD7F32 !important;
+    }
+</style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Time filter buttons
-        const weeklyBtn = document.getElementById('weeklyBtn');
-        const monthlyBtn = document.getElementById('monthlyBtn');
-        const allTimeBtn = document.getElementById('allTimeBtn');
-        
-        weeklyBtn.addEventListener('click', function() {
-            weeklyBtn.classList.add('active');
-            weeklyBtn.classList.remove('btn-outline-primary');
-            weeklyBtn.classList.add('btn-primary');
-            
-            monthlyBtn.classList.remove('active');
-            monthlyBtn.classList.remove('btn-primary');
-            monthlyBtn.classList.add('btn-outline-primary');
-            
-            allTimeBtn.classList.remove('active');
-            allTimeBtn.classList.remove('btn-primary');
-            allTimeBtn.classList.add('btn-outline-primary');
-            
-            // In a real application, we would reload data here
-            // For this demo, we'll just keep the same data
-        });
-        
-        monthlyBtn.addEventListener('click', function() {
-            monthlyBtn.classList.add('active');
-            monthlyBtn.classList.remove('btn-outline-primary');
-            monthlyBtn.classList.add('btn-primary');
-            
-            weeklyBtn.classList.remove('active');
-            weeklyBtn.classList.remove('btn-primary');
-            weeklyBtn.classList.add('btn-outline-primary');
-            
-            allTimeBtn.classList.remove('active');
-            allTimeBtn.classList.remove('btn-primary');
-            allTimeBtn.classList.add('btn-outline-primary');
-            
-            // In a real application, we would reload data here
-        });
-        
-        allTimeBtn.addEventListener('click', function() {
-            allTimeBtn.classList.add('active');
-            allTimeBtn.classList.remove('btn-outline-primary');
-            allTimeBtn.classList.add('btn-primary');
-            
-            weeklyBtn.classList.remove('active');
-            weeklyBtn.classList.remove('btn-primary');
-            weeklyBtn.classList.add('btn-outline-primary');
-            
-            monthlyBtn.classList.remove('active');
-            monthlyBtn.classList.remove('btn-primary');
-            monthlyBtn.classList.add('btn-outline-primary');
-            
-            // In a real application, we would reload data here
-        });
-        
-        // Scroll to current user in rankings
-        const currentUserRow = document.querySelector('.current-user-row');
-        if (currentUserRow) {
-            setTimeout(() => {
-                currentUserRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 500);
-        }
+        // Filter functionality would go here in a real implementation
     });
 </script>
+{% endblock %}
 {% endblock %}

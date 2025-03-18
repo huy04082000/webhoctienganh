@@ -1,531 +1,236 @@
 {% extends "base.html" %}
-{% from "macros.html" import notification_item %}
 
-{% block title %}Thông báo - VietEnglish{% endblock %}
+{% block title %}Thông báo - AI English Learning{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4 align-items-center">
-        <div class="col-lg-8">
-            <h1 class="mb-0">
-                <i class="fas fa-bell me-2 text-primary"></i>Thông báo
-            </h1>
-            <p class="lead text-muted mt-2">Theo dõi các cập nhật và thông báo từ VietEnglish</p>
-        </div>
-        <div class="col-lg-4 text-lg-end">
-            <div class="btn-group">
-                <button class="btn btn-outline-primary" id="markAllRead">
-                    <i class="fas fa-check-double me-1"></i> Đánh dấu tất cả đã đọc
-                </button>
-                <button class="btn btn-outline-secondary" id="clearAllBtn">
-                    <i class="fas fa-trash me-1"></i> Xóa tất cả
-                </button>
-            </div>
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Thông báo</h1>
+        <div>
+            <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="markAllAsRead">
+                <i class="fas fa-check fa-sm text-white-50 me-2"></i>Đánh dấu tất cả là đã đọc
+            </a>
         </div>
     </div>
-
-    <div class="row">
-        <!-- Main Content -->
-        <div class="col-lg-8 order-lg-2">
-            <!-- Notification Tabs -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white p-0">
-                    <ul class="nav nav-tabs" id="notificationTab" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active position-relative" id="all-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#all-tab-pane" type="button" role="tab" 
-                                    aria-controls="all-tab-pane" aria-selected="true">
-                                Tất cả
-                                {% if notifications|selectattr('is_read', 'equalto', False)|list|length > 0 %}
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                        {{ notifications|selectattr('is_read', 'equalto', False)|list|length }}
-                                    </span>
-                                {% endif %}
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link position-relative" id="unread-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#unread-tab-pane" type="button" role="tab" 
-                                    aria-controls="unread-tab-pane" aria-selected="false">
-                                Chưa đọc
-                                {% if notifications|selectattr('is_read', 'equalto', False)|list|length > 0 %}
-                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                        {{ notifications|selectattr('is_read', 'equalto', False)|list|length }}
-                                    </span>
-                                {% endif %}
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="system-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#system-tab-pane" type="button" role="tab" 
-                                    aria-controls="system-tab-pane" aria-selected="false">
-                                Hệ thống
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="course-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#course-tab-pane" type="button" role="tab" 
-                                    aria-controls="course-tab-pane" aria-selected="false">
-                                Khóa học
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="test-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#test-tab-pane" type="button" role="tab" 
-                                    aria-controls="test-tab-pane" aria-selected="false">
-                                Bài kiểm tra
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="forum-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#forum-tab-pane" type="button" role="tab" 
-                                    aria-controls="forum-tab-pane" aria-selected="false">
-                                Diễn đàn
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-                <div class="card-body p-0">
-                    <div class="tab-content" id="notificationTabContent">
-                        <!-- All Tab -->
-                        <div class="tab-pane fade show active" id="all-tab-pane" role="tabpanel" aria-labelledby="all-tab" tabindex="0">
-                            <div class="notification-list">
-                                {% if notifications %}
-                                    {% for notification in notifications %}
-                                        {{ notification_item(notification) }}
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="text-center py-5">
-                                        <i class="fas fa-bell-slash text-muted" style="font-size: 4rem;"></i>
-                                        <p class="mt-3">Bạn không có thông báo nào.</p>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Unread Tab -->
-                        <div class="tab-pane fade" id="unread-tab-pane" role="tabpanel" aria-labelledby="unread-tab" tabindex="0">
-                            <div class="notification-list">
-                                {% set unread_notifications = notifications|selectattr('is_read', 'equalto', False)|list %}
-                                {% if unread_notifications %}
-                                    {% for notification in unread_notifications %}
-                                        {{ notification_item(notification) }}
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="text-center py-5">
-                                        <i class="fas fa-check-circle text-muted" style="font-size: 4rem;"></i>
-                                        <p class="mt-3">Bạn không có thông báo chưa đọc.</p>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- System Tab -->
-                        <div class="tab-pane fade" id="system-tab-pane" role="tabpanel" aria-labelledby="system-tab" tabindex="0">
-                            <div class="notification-list">
-                                {% set system_notifications = notifications|selectattr('type', 'equalto', 'system')|list %}
-                                {% if system_notifications %}
-                                    {% for notification in system_notifications %}
-                                        {{ notification_item(notification) }}
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="text-center py-5">
-                                        <i class="fas fa-cog text-muted" style="font-size: 4rem;"></i>
-                                        <p class="mt-3">Không có thông báo hệ thống.</p>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Course Tab -->
-                        <div class="tab-pane fade" id="course-tab-pane" role="tabpanel" aria-labelledby="course-tab" tabindex="0">
-                            <div class="notification-list">
-                                {% set course_notifications = notifications|selectattr('type', 'equalto', 'course')|list %}
-                                {% if course_notifications %}
-                                    {% for notification in course_notifications %}
-                                        {{ notification_item(notification) }}
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="text-center py-5">
-                                        <i class="fas fa-book text-muted" style="font-size: 4rem;"></i>
-                                        <p class="mt-3">Không có thông báo khóa học.</p>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Test Tab -->
-                        <div class="tab-pane fade" id="test-tab-pane" role="tabpanel" aria-labelledby="test-tab" tabindex="0">
-                            <div class="notification-list">
-                                {% set test_notifications = notifications|selectattr('type', 'equalto', 'test')|list %}
-                                {% if test_notifications %}
-                                    {% for notification in test_notifications %}
-                                        {{ notification_item(notification) }}
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="text-center py-5">
-                                        <i class="fas fa-file-alt text-muted" style="font-size: 4rem;"></i>
-                                        <p class="mt-3">Không có thông báo bài kiểm tra.</p>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Forum Tab -->
-                        <div class="tab-pane fade" id="forum-tab-pane" role="tabpanel" aria-labelledby="forum-tab" tabindex="0">
-                            <div class="notification-list">
-                                {% set forum_notifications = notifications|selectattr('type', 'equalto', 'forum')|list %}
-                                {% if forum_notifications %}
-                                    {% for notification in forum_notifications %}
-                                        {{ notification_item(notification) }}
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="text-center py-5">
-                                        <i class="fas fa-comments text-muted" style="font-size: 4rem;"></i>
-                                        <p class="mt-3">Không có thông báo diễn đàn.</p>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
+    
+    <!-- Filter Controls -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm thông báo..." id="searchNotification">
+                        <button class="btn btn-primary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Sidebar -->
-        <div class="col-lg-4 order-lg-1">
-            <!-- Notification Stats Card -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2 text-primary"></i>Thống kê thông báo</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="notificationChart" height="200"></canvas>
-                    
-                    <hr class="my-4">
-                    
-                    <div class="row text-center">
-                        <div class="col-4">
-                            <h4 class="mb-0">{{ notifications|selectattr('type', 'equalto', 'system')|list|length }}</h4>
-                            <small class="text-muted">Hệ thống</small>
-                        </div>
-                        <div class="col-4">
-                            <h4 class="mb-0">{{ notifications|selectattr('type', 'equalto', 'course')|list|length + notifications|selectattr('type', 'equalto', 'test')|list|length }}</h4>
-                            <small class="text-muted">Học tập</small>
-                        </div>
-                        <div class="col-4">
-                            <h4 class="mb-0">{{ notifications|selectattr('type', 'equalto', 'forum')|list|length }}</h4>
-                            <small class="text-muted">Diễn đàn</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Notification Settings -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-cog me-2 text-secondary"></i>Cài đặt thông báo</h5>
-                </div>
-                <div class="card-body">
-                    <form>
-                        <h6 class="mb-3">Nhận thông báo</h6>
-                        
-                        <div class="mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
-                                <label class="form-check-label" for="emailNotifications">
-                                    Thông báo qua email
-                                </label>
-                            </div>
-                            <small class="form-text text-muted">Nhận email khi có thông báo mới</small>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="browserNotifications" checked>
-                                <label class="form-check-label" for="browserNotifications">
-                                    Thông báo trên trình duyệt
-                                </label>
-                            </div>
-                            <small class="form-text text-muted">Hiển thị thông báo ngay cả khi không mở trang web</small>
-                        </div>
-                        
-                        <hr class="my-4">
-                        
-                        <h6 class="mb-3">Loại thông báo</h6>
-                        
-                        <div class="mb-2">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="systemNotifications" checked>
-                                <label class="form-check-label" for="systemNotifications">
-                                    Thông báo hệ thống
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-2">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="courseNotifications" checked>
-                                <label class="form-check-label" for="courseNotifications">
-                                    Thông báo khóa học
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-2">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="testNotifications" checked>
-                                <label class="form-check-label" for="testNotifications">
-                                    Thông báo bài kiểm tra
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-2">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="forumNotifications" checked>
-                                <label class="form-check-label" for="forumNotifications">
-                                    Thông báo diễn đàn
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-2">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="achievementNotifications" checked>
-                                <label class="form-check-label" for="achievementNotifications">
-                                    Thông báo huy hiệu và thành tích
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-2">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="marketingNotifications">
-                                <label class="form-check-label" for="marketingNotifications">
-                                    Thông báo khuyến mãi và sự kiện
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i> Lưu cài đặt
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-bolt me-2 text-warning"></i>Thao tác nhanh</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-tachometer-alt me-1"></i> Bảng điều khiển
-                        </a>
-                        <a href="{{ url_for('courses') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-book me-1"></i> Khóa học của tôi
-                        </a>
-                        <a href="{{ url_for('forums') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-comments me-1"></i> Diễn đàn
-                        </a>
-                        <a href="{{ url_for('profile') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-user me-1"></i> Hồ sơ cá nhân
-                        </a>
+                <div class="col-md-6">
+                    <div class="btn-group float-md-end" role="group">
+                        <button type="button" class="btn btn-outline-primary active" data-filter="all">Tất cả</button>
+                        <button type="button" class="btn btn-outline-primary" data-filter="unread">Chưa đọc</button>
+                        <button type="button" class="btn btn-outline-primary" data-filter="system">Hệ thống</button>
+                        <button type="button" class="btn btn-outline-primary" data-filter="course">Khóa học</button>
+                        <button type="button" class="btn btn-outline-primary" data-filter="test">Bài kiểm tra</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Notifications List -->
+    <div class="card shadow mb-4">
+        <div class="card-body p-0">
+            {% if all_notifications %}
+                <div class="list-group list-group-flush notification-list">
+                    {% for notification in all_notifications %}
+                        <div class="list-group-item list-group-item-action notification-item 
+                            {% if not notification.is_read %}unread{% endif %}" 
+                            data-type="{{ notification.type }}">
+                            <div class="row align-items-center">
+                                <!-- Icon based on notification type -->
+                                <div class="col-auto">
+                                    {% if notification.type == 'system' %}
+                                        <div class="icon-circle bg-primary">
+                                            <i class="fas fa-cogs text-white"></i>
+                                        </div>
+                                    {% elif notification.type == 'course' %}
+                                        <div class="icon-circle bg-success">
+                                            <i class="fas fa-book text-white"></i>
+                                        </div>
+                                    {% elif notification.type == 'test' %}
+                                        <div class="icon-circle bg-info">
+                                            <i class="fas fa-tasks text-white"></i>
+                                        </div>
+                                    {% elif notification.type == 'badge' %}
+                                        <div class="icon-circle bg-warning">
+                                            <i class="fas fa-award text-white"></i>
+                                        </div>
+                                    {% else %}
+                                        <div class="icon-circle bg-secondary">
+                                            <i class="fas fa-bell text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Notification content -->
+                                <div class="col">
+                                    <div class="small text-gray-500">{{ notification.created_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                                    {% if not notification.is_read %}
+                                        <span class="badge bg-primary float-end">Mới</span>
+                                    {% endif %}
+                                    <div class="font-weight-bold">{{ notification.title }}</div>
+                                    <div class="text-muted">{{ notification.content }}</div>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="col-auto">
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('read_notification', notification_id=notification.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            {% if notification.is_read %}
+                                                <i class="fas fa-external-link-alt"></i>
+                                            {% else %}
+                                                <i class="fas fa-envelope-open"></i>
+                                            {% endif %}
+                                        </a>
+                                        <a href="#" class="btn btn-sm btn-danger delete-notification" 
+                                           data-id="{{ notification.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-4x text-gray-300 mb-3"></i>
+                    <p class="lead mb-0">Không có thông báo nào</p>
+                    <p class="text-muted">Các thông báo mới sẽ xuất hiện ở đây</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    {% if all_notifications and all_notifications|length > 10 %}
+        <div class="d-flex justify-content-center">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Trước</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
 </div>
 
-<!-- Clear All Confirmation Modal -->
-<div class="modal fade" id="clearAllModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Xác nhận xóa</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xóa tất cả thông báo?</p>
-                <p class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i> Hành động này không thể khôi phục.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" id="confirmClearAll">Xóa tất cả</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- CSS for notification items -->
+{% block extra_css %}
+<style>
+    .icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .notification-item {
+        transition: all 0.2s;
+    }
+    
+    .notification-item.unread {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+    
+    .notification-item:hover {
+        background-color: rgba(78, 115, 223, 0.1);
+    }
+</style>
 {% endblock %}
 
+<!-- JavaScript for filtering -->
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Notification Stats Chart
-        const notificationCtx = document.getElementById('notificationChart');
+        // Filter buttons
+        const filterButtons = document.querySelectorAll('[data-filter]');
+        const notificationItems = document.querySelectorAll('.notification-item');
         
-        if (notificationCtx) {
-            const notificationChart = new Chart(notificationCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Hệ thống', 'Khóa học', 'Bài kiểm tra', 'Diễn đàn', 'Huy hiệu'],
-                    datasets: [{
-                        data: [
-                            {{ notifications|selectattr('type', 'equalto', 'system')|list|length }}, 
-                            {{ notifications|selectattr('type', 'equalto', 'course')|list|length }}, 
-                            {{ notifications|selectattr('type', 'equalto', 'test')|list|length }}, 
-                            {{ notifications|selectattr('type', 'equalto', 'forum')|list|length }}, 
-                            {{ notifications|selectattr('type', 'equalto', 'badge')|list|length }}
-                        ],
-                        backgroundColor: [
-                            'rgba(108, 117, 125, 0.7)',
-                            'rgba(67, 97, 238, 0.7)',
-                            'rgba(76, 201, 240, 0.7)',
-                            'rgba(46, 204, 113, 0.7)',
-                            'rgba(247, 37, 133, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(108, 117, 125, 1)',
-                            'rgba(67, 97, 238, 1)',
-                            'rgba(76, 201, 240, 1)',
-                            'rgba(46, 204, 113, 1)',
-                            'rgba(247, 37, 133, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Toggle active class
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filterValue = this.getAttribute('data-filter');
+                
+                notificationItems.forEach(item => {
+                    if (filterValue === 'all') {
+                        item.style.display = 'block';
+                    } else if (filterValue === 'unread') {
+                        item.style.display = item.classList.contains('unread') ? 'block' : 'none';
+                    } else {
+                        item.style.display = item.getAttribute('data-type') === filterValue ? 'block' : 'none';
                     }
+                });
+            });
+        });
+        
+        // Search function
+        const searchInput = document.getElementById('searchNotification');
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            notificationItems.forEach(item => {
+                const title = item.querySelector('.font-weight-bold').textContent.toLowerCase();
+                const content = item.querySelector('.text-muted').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || content.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
                 }
             });
-        }
+        });
         
-        // Mark all as read
-        const markAllRead = document.getElementById('markAllRead');
-        
-        if (markAllRead) {
-            markAllRead.addEventListener('click', function() {
-                const unreadNotifications = document.querySelectorAll('.card.border-primary');
-                
-                unreadNotifications.forEach(notification => {
-                    notification.classList.remove('border-primary');
-                    notification.querySelector('.badge.bg-primary')?.remove();
-                });
-                
-                // Update badge counts
-                const badges = document.querySelectorAll('.badge.rounded-pill.bg-danger');
-                badges.forEach(badge => {
-                    badge.textContent = '0';
-                    badge.classList.add('d-none');
-                });
-                
-                // Show success message
-                const alert = document.createElement('div');
-                alert.className = 'alert alert-success alert-dismissible fade show animate-fade-in';
-                alert.innerHTML = `
-                    <i class="fas fa-check-circle me-2"></i> Đã đánh dấu tất cả thông báo là đã đọc.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                
-                document.querySelector('.container').insertBefore(alert, document.querySelector('.row'));
-                
-                // Auto dismiss after 3 seconds
-                setTimeout(() => {
-                    alert.classList.remove('show');
-                    setTimeout(() => {
-                        alert.remove();
-                    }, 300);
-                }, 3000);
-            });
-        }
-        
-        // Clear all notifications
-        const clearAllBtn = document.getElementById('clearAllBtn');
-        const clearAllModal = new bootstrap.Modal(document.getElementById('clearAllModal'));
-        const confirmClearAll = document.getElementById('confirmClearAll');
-        
-        if (clearAllBtn) {
-            clearAllBtn.addEventListener('click', function() {
-                clearAllModal.show();
-            });
-        }
-        
-        if (confirmClearAll) {
-            confirmClearAll.addEventListener('click', function() {
-                const notificationList = document.querySelectorAll('.notification-list');
-                
-                notificationList.forEach(list => {
-                    const emptyState = document.createElement('div');
-                    emptyState.className = 'text-center py-5';
-                    emptyState.innerHTML = `
-                        <i class="fas fa-bell-slash text-muted" style="font-size: 4rem;"></i>
-                        <p class="mt-3">Không có thông báo.</p>
-                    `;
-                    
-                    // Clear notifications
-                    list.innerHTML = '';
-                    list.appendChild(emptyState);
-                });
-                
-                // Update badge counts
-                const badges = document.querySelectorAll('.badge.rounded-pill.bg-danger');
-                badges.forEach(badge => {
-                    badge.textContent = '0';
-                    badge.classList.add('d-none');
-                });
-                
-                // Hide modal
-                clearAllModal.hide();
-                
-                // Show success message
-                const alert = document.createElement('div');
-                alert.className = 'alert alert-success alert-dismissible fade show animate-fade-in';
-                alert.innerHTML = `
-                    <i class="fas fa-check-circle me-2"></i> Đã xóa tất cả thông báo.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                
-                document.querySelector('.container').insertBefore(alert, document.querySelector('.row'));
-                
-                // Auto dismiss after 3 seconds
-                setTimeout(() => {
-                    alert.classList.remove('show');
-                    setTimeout(() => {
-                        alert.remove();
-                    }, 300);
-                }, 3000);
-            });
-        }
-        
-        // Browser Notification Permission
-        const browserNotifications = document.getElementById('browserNotifications');
-        
-        if (browserNotifications) {
-            browserNotifications.addEventListener('change', function() {
-                if (this.checked) {
-                    // Request notification permission
-                    if (Notification.permission !== 'granted') {
-                        Notification.requestPermission().then(permission => {
-                            if (permission !== 'granted') {
-                                this.checked = false;
-                            }
-                        });
-                    }
+        // Mark all as read button
+        const markAllAsReadBtn = document.getElementById('markAllAsRead');
+        markAllAsReadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            // In a real implementation, this would send an AJAX request to mark all as read
+            // For demo purposes, we'll just remove the 'unread' class and badge
+            document.querySelectorAll('.notification-item.unread').forEach(item => {
+                item.classList.remove('unread');
+                const badge = item.querySelector('.badge');
+                if (badge) {
+                    badge.remove();
                 }
             });
-        }
+        });
+        
+        // Delete notification handlers
+        document.querySelectorAll('.delete-notification').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                // In a real implementation, this would send an AJAX request to delete
+                // For demo purposes, we'll just hide the item
+                const notificationId = this.getAttribute('data-id');
+                this.closest('.notification-item').style.display = 'none';
+            });
+        });
     });
 </script>
 {% endblock %}

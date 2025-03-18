@@ -1,0 +1,578 @@
+{% extends "base.html" %}
+
+{% block title %}Quản trị viên - AI English Learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Bảng điều khiển quản trị</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-download fa-sm text-white-50 me-2"></i>Xuất báo cáo
+        </a>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Total Users Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Tổng người dùng
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_users }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Courses Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Tổng khóa học
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_courses }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Lessons Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Tổng bài học
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_lessons }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book-open fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Tests Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Tổng bài kiểm tra
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_tests }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- User Growth Chart -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Tăng trưởng người dùng (30 ngày qua)</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                            aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Tùy chọn:</div>
+                            <a class="dropdown-item" href="#">Xuất dữ liệu</a>
+                            <a class="dropdown-item" href="#">Thay đổi phạm vi thời gian</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">Xem báo cáo chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="userGrowthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Level Distribution -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Phân bố trình độ người dùng</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                            data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                            aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Tùy chọn:</div>
+                            <a class="dropdown-item" href="#">Xuất dữ liệu</a>
+                            <a class="dropdown-item" href="#">Xem danh sách chi tiết</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="userLevelChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="me-2">
+                            <i class="fas fa-circle text-danger"></i> A1-A2
+                        </span>
+                        <span class="me-2">
+                            <i class="fas fa-circle text-info"></i> B1-B2
+                        </span>
+                        <span class="me-2">
+                            <i class="fas fa-circle text-primary"></i> C1-C2
+                        </span>
+                        <span class="me-2">
+                            <i class="fas fa-circle text-secondary"></i> Chưa xác định
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Latest Users -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Người dùng mới nhất</h6>
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-primary">Xem tất cả</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Tên</th>
+                                    <th>Email</th>
+                                    <th>Trình độ</th>
+                                    <th>Ngày đăng ký</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in latest_users %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" class="rounded-circle me-2" width="32" height="32">
+                                                <div>
+                                                    <div class="font-weight-bold">{{ user.fullname }}</div>
+                                                    <small class="text-muted">{{ user.username }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            {% if user.profile and user.profile.language_level %}
+                                                <span class="badge text-white 
+                                                    {% if user.profile.language_level == 'Beginner (A1)' %}badge-a1
+                                                    {% elif user.profile.language_level == 'Elementary (A2)' %}badge-a2
+                                                    {% elif user.profile.language_level == 'Intermediate (B1)' %}badge-b1
+                                                    {% elif user.profile.language_level == 'Upper Intermediate (B2)' %}badge-b2
+                                                    {% elif user.profile.language_level == 'Advanced (C1)' %}badge-c1
+                                                    {% elif user.profile.language_level == 'Proficient (C2)' %}badge-c2
+                                                    {% endif %}">
+                                                    {{ user.profile.language_level }}
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Chưa xác định</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.created_at.strftime('%d/%m/%Y') }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Courses -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Khóa học mới nhất</h6>
+                    <a href="{{ url_for('admin_courses') }}" class="btn btn-sm btn-primary">Xem tất cả</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Tên khóa học</th>
+                                    <th>Cấp độ</th>
+                                    <th>Số bài học</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in latest_courses %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="{{ url_for('static', filename='uploads/' + course.image) }}" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                {{ course.title }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge text-white 
+                                                {% if course.level == 'Beginner (A1)' %}badge-a1
+                                                {% elif course.level == 'Elementary (A2)' %}badge-a2
+                                                {% elif course.level == 'Intermediate (B1)' %}badge-b1
+                                                {% elif course.level == 'Upper Intermediate (B2)' %}badge-b2
+                                                {% elif course.level == 'Advanced (C1)' %}badge-c1
+                                                {% elif course.level == 'Proficient (C2)' %}badge-c2
+                                                {% endif %}">
+                                                {{ course.level }}
+                                            </span>
+                                        </td>
+                                        <td>{{ course.lessons|length }}</td>
+                                        <td>
+                                            <span class="badge {{ 'bg-success' if course.is_published else 'bg-secondary' }}">
+                                                {{ 'Đã xuất bản' if course.is_published else 'Bản nháp' }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Generate Course with AI -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Tạo khóa học tự động bằng AI</h6>
+                </div>
+                <div class="card-body">
+                    <p>Sử dụng AI để tạo nhanh khóa học tương ứng với trình độ người học.</p>
+                    <form method="POST" action="{{ url_for('admin_generate_course', level='Beginner (A1)') }}" class="mb-3">
+                        <div class="mb-3">
+                            <label for="level" class="form-label">Chọn cấp độ</label>
+                            <select class="form-select" id="level" name="level">
+                                <option value="Beginner (A1)">Beginner (A1)</option>
+                                <option value="Elementary (A2)">Elementary (A2)</option>
+                                <option value="Intermediate (B1)">Intermediate (B1)</option>
+                                <option value="Upper Intermediate (B2)">Upper Intermediate (B2)</option>
+                                <option value="Advanced (C1)">Advanced (C1)</option>
+                                <option value="Proficient (C2)">Proficient (C2)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="topic" class="form-label">Chủ đề (không bắt buộc)</label>
+                            <input type="text" class="form-control" id="topic" name="topic" placeholder="Nhập chủ đề...">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-magic me-2"></i>Tạo khóa học
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Trạng thái hệ thống</h6>
+                </div>
+                <div class="card-body">
+                    <h4 class="small font-weight-bold">Dung lượng máy chủ <span class="float-end">60%</span></h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <h4 class="small font-weight-bold">Tài nguyên GPU <span class="float-end">40%</span></h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <h4 class="small font-weight-bold">Tốc độ xử lý AI <span class="float-end">300ms</span></h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <h4 class="small font-weight-bold">Tỉ lệ lỗi hệ thống <span class="float-end">0.5%</span></h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 5%" aria-valuenow="5" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                            <i class="fas fa-circle text-success me-1"></i>
+                            <span>Hệ thống đang hoạt động bình thường</span>
+                        </div>
+                        <a href="#" class="btn btn-sm btn-primary">
+                            <i class="fas fa-sync-alt me-1"></i>Làm mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deep AI Model Status -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Trạng thái mô hình DeepSeek AI</h6>
+            <div class="dropdown no-arrow">
+                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                    aria-labelledby="dropdownMenuLink">
+                    <div class="dropdown-header">Tùy chọn:</div>
+                    <a class="dropdown-item" href="#">Xem nhật ký</a>
+                    <a class="dropdown-item" href="#">Khởi động lại mô hình</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#">Cập nhật mô hình</a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th style="width: 200px;">Trạng thái mô hình</th>
+                            <td>
+                                <span class="badge bg-success">Đang hoạt động</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Phiên bản mô hình</th>
+                            <td>DeepSeek-v1.5</td>
+                        </tr>
+                        <tr>
+                            <th>Bộ nhớ đã sử dụng</th>
+                            <td>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small class="text-muted">8.3 GB / 12.8 GB</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Thời gian hoạt động</th>
+                            <td>3 ngày 14 giờ 25 phút</td>
+                        </tr>
+                        <tr>
+                            <th>Tổng yêu cầu xử lý</th>
+                            <td>10,427 yêu cầu</td>
+                        </tr>
+                        <tr>
+                            <th>Thời gian phản hồi trung bình</th>
+                            <td>320ms</td>
+                        </tr>
+                        <tr>
+                            <th>Máy chủ</th>
+                            <td>GTX 3080 (12GB VRAM)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Set new default font family and font color to mimic Bootstrap's default styling
+    Chart.defaults.font.family = 'Nunito, "Segoe UI", Roboto, Arial, sans-serif';
+    Chart.defaults.color = '#858796';
+
+    // Generate random data for the charts
+    function generateDates(numDays) {
+        const dates = [];
+        let currentDate = new Date();
+        
+        for (let i = numDays - 1; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(currentDate.getDate() - i);
+            const formattedDate = `${date.getDate()}/${date.getMonth() + 1}`;
+            dates.push(formattedDate);
+        }
+        
+        return dates;
+    }
+
+    function generateRandomData(numPoints, min, max) {
+        return Array.from({ length: numPoints }, () => Math.floor(Math.random() * (max - min + 1)) + min);
+    }
+
+    // User Growth Chart
+    const dates = generateDates(30);
+    const newUsers = generateRandomData(30, 1, 15);
+    let accumulatedUsers = 0;
+    const totalUsers = newUsers.map(users => {
+        accumulatedUsers += users;
+        return accumulatedUsers + {{ total_users - 150 }};
+    });
+
+    const ctx = document.getElementById('userGrowthChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: 'Tổng người dùng',
+                    data: totalUsers,
+                    lineTension: 0.3,
+                    backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    pointRadius: 3,
+                    pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    pointBorderColor: 'rgba(78, 115, 223, 1)',
+                    pointHoverRadius: 3,
+                    pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    fill: true
+                },
+                {
+                    label: 'Người dùng mới',
+                    data: newUsers,
+                    lineTension: 0.3,
+                    backgroundColor: 'rgba(28, 200, 138, 0.05)',
+                    borderColor: 'rgba(28, 200, 138, 1)',
+                    pointRadius: 3,
+                    pointBackgroundColor: 'rgba(28, 200, 138, 1)',
+                    pointBorderColor: 'rgba(28, 200, 138, 1)',
+                    pointHoverRadius: 3,
+                    pointHoverBackgroundColor: 'rgba(28, 200, 138, 1)',
+                    pointHoverBorderColor: 'rgba(28, 200, 138, 1)',
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 25,
+                    top: 25,
+                    bottom: 0
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        maxTicksLimit: 5,
+                        padding: 10
+                    },
+                    grid: {
+                        color: 'rgb(234, 236, 244)',
+                        drawBorder: false,
+                        borderDash: [2],
+                        zeroLineBorderDash: [2]
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    titleMarginBottom: 10,
+                    titleColor: '#6e707e',
+                    titleFont: {
+                        size: 14
+                    },
+                    borderWidth: 1,
+                    padding: 10,
+                    bodySpacing: 5,
+                    footerSpacing: 5,
+                    footerMarginTop: 5,
+                    displayColors: false,
+                    backgroundColor: 'rgb(255,255,255)',
+                    bodyColor: '#858796',
+                    borderColor: '#dddfeb'
+                }
+            }
+        }
+    });
+
+    // User Level Chart
+    const ctxPie = document.getElementById('userLevelChart').getContext('2d');
+    const myPieChart = new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: ['A1-A2', 'B1-B2', 'C1-C2', 'Chưa xác định'],
+            datasets: [{
+                data: [40, 30, 15, 15],
+                backgroundColor: ['#e74a3b', '#36b9cc', '#4e73df', '#858796'],
+                hoverBackgroundColor: ['#e02d1b', '#2c9faf', '#2e59d9', '#60616f'],
+                hoverBorderColor: 'rgba(234, 236, 244, 1)',
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgb(255,255,255)',
+                    bodyColor: '#858796',
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    displayColors: false,
+                    caretPadding: 10,
+                }
+            }
+        },
+    });
+</script>
+{% endblock %}
+{% endblock %}

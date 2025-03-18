@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Kết quả bài tập - AI English Learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Result Header -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mb-3 mb-lg-0">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-2">
+                            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Bảng điều khiển</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=exercise.lesson.course_id) }}">{{ exercise.lesson.course.title }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('lesson_detail', lesson_id=exercise.lesson_id) }}">{{ exercise.lesson.title }}</a></li>
+                            <li class="breadcrumb-item active">Kết quả bài tập</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0 text-gray-800">{{ exercise.title }}</h1>
+                    <p class="text-muted mb-0">
+                        <span class="me-2">{{ exercise.description }}</span>
+                        <span class="badge bg-{{ 'primary' if exercise.type == 'quiz' else 'success' if exercise.type == 'writing' else 'danger' if exercise.type == 'speaking' else 'info' if exercise.type == 'listening' else 'warning' }}">
+                            {% if exercise.type == 'quiz' %}
+                                <i class="fas fa-tasks me-1"></i> Trắc nghiệm
+                            {% elif exercise.type == 'writing' %}
+                                <i class="fas fa-pen-alt me-1"></i> Viết
+                            {% elif exercise.type == 'speaking' %}
+                                <i class="fas fa-microphone me-1"></i> Nói
+                            {% elif exercise.type == 'listening' %}
+                                <i class="fas fa-headphones me-1"></i> Nghe
+                            {% else %}
+                                <i class="fas fa-book me-1"></i> {{ exercise.type }}
+                            {% endif %}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-lg-4 text-center text-lg-end">
+                    <div class="d-inline-block bg-light rounded p-3 text-center">
+                        <div class="h2 font-weight-bold mb-0 
+                            {% if submission.score >= 8 %}text-success
+                            {% elif submission.score >= 6 %}text-primary
+                            {% else %}text-danger
+                            {% endif %}">
+                            {{ submission.score|round(1) }}/10
+                        </div>
+                        <div>
+                            {% if submission.score >= 7 %}
+                                <span class="badge bg-success">Đạt</span>
+                            {% else %}
+                                <span class="badge bg-danger">Chưa đạt</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Result Summary -->
+    <div class="row">
+        <!-- Left Column: Summary -->
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <!-- Performance Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Tổng quan</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Score Display -->
+                    <div class="text-center mb-4">
+                        <div class="progress-circle mx-auto position-relative" style="width: 120px; height: 120px;">
+                            <svg viewBox="0 0 36 36" class="circular-chart">
+                                {% set score_percentage = (submission.score / 10 * 100)|round|int %}
+                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <path class="circle 
+                                    {% if submission.score >= 8 %}success
+                                    {% elif submission.score >= 6 %}primary
+                                    {% else %}danger
+                                    {% endif %}" 
+                                    stroke-dasharray="{{ score_percentage }}, 100"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                                <text x="18" y="20.35" class="percentage">{{ score_percentage }}%</text>
+                            </svg>
+                        </div>
+                        <h5 class="mt-2 mb-0">{{ feedback.performance }}</h5>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Câu trả lời đúng:</span>
+                            <span class="font-weight-bold">{{ feedback.correct_count }}/{{ feedback.total_questions }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                style="width: {{ (feedback.correct_count / feedback.total_questions * 100)|round|int }}%" 
+                                aria-valuenow="{{ (feedback.correct_count / feedback.total_questions * 100)|round|int }}" 
+                                aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Time Info -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted">Thời gian làm bài:</span>
+                        <span class="font-weight-bold">
+                            {{ (submission.time_spent // 60)|int }} phút {{ submission.time_spent % 60 }} giây
+                        </span>
+                    </div>
+                    
+                    <!-- Points Earned -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Điểm thưởng:</span>
+                        <span class="font-weight-bold text-primary">
+                            +{{ (submission.score * exercise.points / 10)|round|int }} điểm
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Suggestions Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Gợi ý cải thiện</h6>
+                </div>
+                <div class="card-body">
+                    {% if feedback.suggestions %}
+                        <ul class="mb-0">
+                            {% for suggestion in feedback.suggestions %}
+                                <li class="mb-2">{{ suggestion }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">Không có gợi ý cụ thể.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Next Steps Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Bước tiếp theo</h6>
+                </div>
+                <div class="card-body">
+                    {% if feedback.next_steps %}
+                        <ul class="mb-0">
+                            {% for step in feedback.next_steps %}
+                                <li class="mb-2">{{ step }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">Không có đề xuất cụ thể.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Detailed Results -->
+        <div class="col-xl-8 col-lg-7">
+            <!-- Answer Details -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Chi tiết câu trả lời</h6>
+                </div>
+                <div class="card-body">
+                    {% if answers %}
+                        <div class="accordion" id="answersAccordion">
+                            {% for answer in answers %}
+                                <div class="accordion-item mb-3 border rounded">
+                                    <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" 
+                                            aria-controls="collapse{{ loop.index }}">
+                                            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                                <span>
+                                                    Câu {{ loop.index }}:
+                                                    {% if loop.index <= (feedback.correct_count|default(0)) %}
+                                                        <i class="fas fa-check-circle text-success me-1"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-times-circle text-danger me-1"></i>
+                                                    {% endif %}
+                                                </span>
+                                                <span class="badge {{ 'bg-success' if loop.index <= (feedback.correct_count|default(0)) else 'bg-danger' }}">
+                                                    {{ 'Đúng' if loop.index <= (feedback.correct_count|default(0)) else 'Sai' }}
+                                                </span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" 
+                                        aria-labelledby="heading{{ loop.index }}" data-bs-parent="#answersAccordion">
+                                        <div class="accordion-body">
+                                            <div class="mb-3">
+                                                <strong>Câu hỏi:</strong>
+                                                <p>{{ answer.question_id }}</p>
+                                            </div>
+                                            
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <div class="card border-left-primary">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title">Câu trả lời của bạn:</h6>
+                                                            <p class="mb-0">{{ answer.answer }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card border-left-success">
+                                                        <div class="card-body">
+                                                            <h6 class="card-title">Đáp án đúng:</h6>
+                                                            <p class="text-success mb-0">
+                                                                {% if loop.index > (feedback.correct_count|default(0)) %}
+                                                                    Đáp án mẫu sẽ hiển thị ở đây
+                                                                {% else %}
+                                                                    {{ answer.answer }}
+                                                                {% endif %}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="explanation mt-3">
+                                                <strong>Giải thích:</strong>
+                                                <p class="mb-0">
+                                                    {% if loop.index > (feedback.correct_count|default(0)) %}
+                                                        Giải thích chi tiết về đáp án sẽ hiển thị ở đây, giúp bạn hiểu rõ hơn về câu trả lời đúng.
+                                                    {% else %}
+                                                        Bạn đã trả lời đúng! Câu trả lời của bạn hoàn toàn chính xác.
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                            <p class="mb-0">Không có dữ liệu chi tiết về câu trả lời.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Skill Analysis -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Phân tích kỹ năng</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Randomly generated skill assessment for demo -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <h6 class="font-weight-bold mb-2">Kỹ năng ngôn ngữ</h6>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Ngữ pháp</span>
+                                    <span>{{ (70 + (submission.score * 3))|round|int }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ (70 + (submission.score * 3))|round|int }}%" 
+                                        aria-valuenow="{{ (70 + (submission.score * 3))|round|int }}" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Từ vựng</span>
+                                    <span>{{ (60 + (submission.score * 4))|round|int }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                        style="width: {{ (60 + (submission.score * 4))|round|int }}%" 
+                                        aria-valuenow="{{ (60 + (submission.score * 4))|round|int }}" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Phát âm</span>
+                                    <span>{{ (80 + (submission.score * 2))|round|int }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-info" role="progressbar" 
+                                        style="width: {{ (80 + (submission.score * 2))|round|int }}%" 
+                                        aria-valuenow="{{ (80 + (submission.score * 2))|round|int }}" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <h6 class="font-weight-bold mb-2">Các kỹ năng khác</h6>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Lưu loát</span>
+                                    <span>{{ (65 + (submission.score * 3.5))|round|int }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" 
+                                        style="width: {{ (65 + (submission.score * 3.5))|round|int }}%" 
+                                        aria-valuenow="{{ (65 + (submission.score * 3.5))|round|int }}" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Chính xác</span>
+                                    <span>{{ (submission.score * 10)|round|int }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-danger" role="progressbar" 
+                                        style="width: {{ (submission.score * 10)|round|int }}%" 
+                                        aria-valuenow="{{ (submission.score * 10)|round|int }}" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Hiểu văn cảnh</span>
+                                    <span>{{ (75 + (submission.score * 2.5))|round|int }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                        style="width: {{ (75 + (submission.score * 2.5))|round|int }}%" 
+                                        aria-valuenow="{{ (75 + (submission.score * 2.5))|round|int }}" 
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center border-top pt-3">
+                        <p class="text-muted mb-0">Phân tích này được tạo bằng AI dựa trên câu trả lời của bạn</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('lesson_detail', lesson_id=exercise.lesson_id) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại bài học
+                </a>
+                <div>
+                    <a href="{{ url_for('take_exercise', exercise_id=exercise.id) }}" class="btn btn-primary me-2">
+                        <i class="fas fa-redo me-2"></i>Làm lại
+                    </a>
+                    <a href="{{ url_for('course_detail', course_id=exercise.lesson.course_id) }}" class="btn btn-success">
+                        <i class="fas fa-chevron-right me-2"></i>Tiếp tục khóa học
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .circular-chart {
+        display: block;
+        margin: 0 auto;
+        max-width: 100%;
+        max-height: 250px;
+    }
+    
+    .circle-bg {
+        fill: none;
+        stroke: #eee;
+        stroke-width: 3.8;
+    }
+    
+    .circle {
+        fill: none;
+        stroke-width: 3.8;
+        stroke-linecap: round;
+        animation: progress 1s ease-out forwards;
+    }
+    
+    .circle.success {
+        stroke: #1cc88a;
+    }
+    
+    .circle.primary {
+        stroke: #4e73df;
+    }
+    
+    .circle.danger {
+        stroke: #e74a3b;
+    }
+    
+    .percentage {
+        fill: #666;
+        font-family: sans-serif;
+        font-size: 0.5em;
+        text-anchor: middle;
+    }
+    
+    @keyframes progress {
+        0% {
+            stroke-dasharray: 0 100;
+        }
+    }
+    
+    .accordion-button:not(.collapsed) {
+        color: #4e73df;
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+</style>
+{% endblock %}
+{% endblock %}

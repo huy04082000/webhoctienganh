@@ -1,0 +1,566 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exercise.title }} - AI English Learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Exercise Header -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="d-sm-flex justify-content-between align-items-center">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-2">
+                            <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Bảng điều khiển</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=lesson.course_id) }}">{{ lesson.course.title }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('lesson_detail', lesson_id=lesson.id) }}">{{ lesson.title }}</a></li>
+                            <li class="breadcrumb-item active">Bài tập</li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0 text-gray-800">{{ exercise.title }}</h1>
+                    <p class="text-muted mb-0">{{ exercise.description }}</p>
+                </div>
+                <div class="mt-3 mt-sm-0">
+                    <div class="card bg-light">
+                        <div class="card-body p-2 text-center">
+                            <div class="small text-muted mb-1">Thời gian còn lại</div>
+                            <div class="exercise-timer" id="exercise-timer">
+                                <span id="timer-minutes">{{ exercise.time_limit }}</span>:<span id="timer-seconds">00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex mt-3">
+                <div class="me-3">
+                    <span class="badge bg-{{ 'primary' if exercise.type == 'quiz' else 'success' if exercise.type == 'writing' else 'danger' if exercise.type == 'speaking' else 'info' if exercise.type == 'listening' else 'warning' }} py-2 px-3">
+                        {% if exercise.type == 'quiz' %}
+                            <i class="fas fa-tasks me-1"></i> Trắc nghiệm
+                        {% elif exercise.type == 'writing' %}
+                            <i class="fas fa-pen-alt me-1"></i> Viết
+                        {% elif exercise.type == 'speaking' %}
+                            <i class="fas fa-microphone me-1"></i> Nói
+                        {% elif exercise.type == 'listening' %}
+                            <i class="fas fa-headphones me-1"></i> Nghe
+                        {% else %}
+                            <i class="fas fa-book me-1"></i> {{ exercise.type }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="me-3">
+                    <i class="far fa-clock text-muted me-1"></i> <span class="text-muted">{{ exercise.time_limit }} phút</span>
+                </div>
+                <div>
+                    <i class="fas fa-star text-warning me-1"></i> <span class="text-muted">{{ exercise.points }} điểm</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Exercise Instructions -->
+    <div class="alert alert-info mb-4">
+        <div class="d-flex">
+            <div class="me-3">
+                <i class="fas fa-info-circle fa-2x"></i>
+            </div>
+            <div>
+                <h5 class="alert-heading">Hướng dẫn làm bài</h5>
+                <p class="mb-0">
+                    {% if exercise.type == 'quiz' %}
+                        Hãy đọc kỹ câu hỏi và chọn câu trả lời đúng nhất. Mỗi câu trả lời đúng bạn sẽ được điểm tương ứng.
+                    {% elif exercise.type == 'writing' %}
+                        Viết bài theo yêu cầu đề bài. Chú ý đến ngữ pháp, từ vựng và cấu trúc bài viết.
+                    {% elif exercise.type == 'speaking' %}
+                        Nhấn nút ghi âm và nói rõ ràng vào microphone. Bạn có thể nghe lại và ghi âm lại nếu cần.
+                    {% elif exercise.type == 'listening' %}
+                        Nghe kỹ đoạn ghi âm và trả lời câu hỏi. Bạn có thể nghe lại nhiều lần nếu cần.
+                    {% else %}
+                        Làm bài tập theo hướng dẫn cụ thể cho từng câu hỏi.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Exercise Form -->
+    <form method="POST" action="{{ url_for('submit_exercise', exercise_id=exercise.id) }}" id="exercise-form">
+        <input type="hidden" name="time_spent" id="time-spent" value="0">
+        
+        <!-- Questions Container -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Nội dung bài tập</h6>
+                <div class="question-navigation">
+                    <span id="current-question">1</span> / {{ content|length if content is defined else 0 }}
+                </div>
+            </div>
+            <div class="card-body">
+                {% if content %}
+                    {% for question in content %}
+                        <div class="question-container {% if not loop.first %}d-none{% endif %}" id="question-{{ loop.index }}" data-question-index="{{ loop.index }}">
+                            <div class="question-header mb-4">
+                                <h5 class="mb-2">Câu {{ loop.index }}: {{ question.question }}</h5>
+                                {% if question.difficulty %}
+                                    <span class="badge bg-primary">{{ question.difficulty }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Question content based on type -->
+                            {% if question.type == 'multiple_choice' and question.options %}
+                                <div class="options-container">
+                                    {% for option in question.options %}
+                                        <div class="exercise-option mb-3" data-option-index="{{ loop.index }}">
+                                            <div class="form-check">
+                                                <input class="form-check-input question-option visually-hidden" type="radio" 
+                                                    name="answer_{{ question.id }}" id="q{{ question.id }}_option{{ loop.index }}" 
+                                                    value="{{ option }}" data-question-id="{{ question.id }}">
+                                                <label class="form-check-label w-100" for="q{{ question.id }}_option{{ loop.index }}">
+                                                    {{ option }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                            {% elif question.type == 'writing' %}
+                                <div class="mb-3">
+                                    <textarea class="form-control" rows="6" name="answer_{{ question.id }}" 
+                                        placeholder="Viết câu trả lời của bạn..."></textarea>
+                                </div>
+                                
+                            {% elif question.type == 'listening' and question.audio_url %}
+                                <div class="mb-4">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <audio controls class="w-100">
+                                                <source src="{{ question.audio_url }}" type="audio/mpeg">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if question.options %}
+                                        <div class="options-container">
+                                            {% for option in question.options %}
+                                                <div class="exercise-option mb-3" data-option-index="{{ loop.index }}">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input question-option visually-hidden" type="radio" 
+                                                            name="answer_{{ question.id }}" id="q{{ question.id }}_option{{ loop.index }}" 
+                                                            value="{{ option }}" data-question-id="{{ question.id }}">
+                                                        <label class="form-check-label w-100" for="q{{ question.id }}_option{{ loop.index }}">
+                                                            {{ option }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <textarea class="form-control" rows="4" name="answer_{{ question.id }}" 
+                                            placeholder="Viết câu trả lời của bạn dựa trên bài nghe..."></textarea>
+                                    {% endif %}
+                                </div>
+                                
+                            {% elif question.type == 'speaking' %}
+                                <div class="mb-3">
+                                    <div class="alert alert-secondary">
+                                        <i class="fas fa-microphone me-2"></i> Nhấn nút ghi âm và đọc to câu trả lời của bạn.
+                                    </div>
+                                    <div class="text-center mb-3">
+                                        <button type="button" class="btn btn-danger me-2" id="record-button-{{ question.id }}">
+                                            <i class="fas fa-microphone me-2"></i>Bắt đầu ghi âm
+                                        </button>
+                                        <button type="button" class="btn btn-secondary me-2 d-none" id="stop-button-{{ question.id }}">
+                                            <i class="fas fa-stop me-2"></i>Dừng ghi âm
+                                        </button>
+                                        <button type="button" class="btn btn-info d-none" id="play-button-{{ question.id }}">
+                                            <i class="fas fa-play me-2"></i>Nghe lại
+                                        </button>
+                                    </div>
+                                    <div class="d-none" id="audio-container-{{ question.id }}">
+                                        <audio controls class="w-100" id="audio-player-{{ question.id }}"></audio>
+                                    </div>
+                                    <input type="hidden" name="answer_{{ question.id }}" id="answer_{{ question.id }}" value="">
+                                </div>
+                                
+                            {% elif question.type == 'reading' and question.text %}
+                                <div class="mb-4">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Đoạn văn:</h6>
+                                            <p>{{ question.text }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if question.options %}
+                                        <div class="options-container">
+                                            {% for option in question.options %}
+                                                <div class="exercise-option mb-3" data-option-index="{{ loop.index }}">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input question-option visually-hidden" type="radio" 
+                                                            name="answer_{{ question.id }}" id="q{{ question.id }}_option{{ loop.index }}" 
+                                                            value="{{ option }}" data-question-id="{{ question.id }}">
+                                                        <label class="form-check-label w-100" for="q{{ question.id }}_option{{ loop.index }}">
+                                                            {{ option }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <textarea class="form-control" rows="4" name="answer_{{ question.id }}" 
+                                            placeholder="Viết câu trả lời của bạn dựa trên đoạn văn..."></textarea>
+                                    {% endif %}
+                                </div>
+                                
+                            {% elif question.type == 'cloze' %}
+                                <div class="mb-3">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <p>{{ question.question }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if question.options %}
+                                        <div class="options-container">
+                                            {% for option in question.options %}
+                                                <div class="exercise-option mb-3" data-option-index="{{ loop.index }}">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input question-option visually-hidden" type="radio" 
+                                                            name="answer_{{ question.id }}" id="q{{ question.id }}_option{{ loop.index }}" 
+                                                            value="{{ option }}" data-question-id="{{ question.id }}">
+                                                        <label class="form-check-label w-100" for="q{{ question.id }}_option{{ loop.index }}">
+                                                            {{ option }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <input type="text" class="form-control" name="answer_{{ question.id }}" 
+                                            placeholder="Nhập từ thích hợp...">
+                                    {% endif %}
+                                </div>
+                                
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i> Loại câu hỏi không được hỗ trợ.
+                                </div>
+                                <input type="hidden" name="answer_{{ question.id }}" value="">
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- Navigation buttons -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-secondary" id="prev-question" disabled>
+                            <i class="fas fa-arrow-left me-2"></i>Câu trước
+                        </button>
+                        <button type="button" class="btn btn-primary" id="next-question">
+                            Câu tiếp theo<i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-circle fa-4x text-warning mb-3"></i>
+                        <h5>Không có nội dung bài tập</h5>
+                        <p class="text-muted">Bài tập này không có câu hỏi nào hoặc đã xảy ra lỗi.</p>
+                        <a href="{{ url_for('lesson_detail', lesson_id=lesson.id) }}" class="btn btn-primary mt-3">
+                            Quay lại bài học
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Question Progress -->
+        {% if content and content|length > 1 %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Tiến độ</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for question in content %}
+                            <div class="col-auto mb-2">
+                                <button type="button" class="btn btn-outline-primary question-nav-btn" 
+                                    data-question="{{ loop.index }}">
+                                    {{ loop.index }}
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Submit Button -->
+        <div class="card shadow mb-4">
+            <div class="card-body text-center">
+                <button type="submit" class="btn btn-success btn-lg" id="submit-exercise">
+                    <i class="fas fa-paper-plane me-2"></i>Nộp bài
+                </button>
+                <p class="text-muted small mt-2">Kiểm tra lại câu trả lời trước khi nộp bài</p>
+            </div>
+        </div>
+    </form>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmSubmitModal" tabindex="-1" aria-labelledby="confirmSubmitModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmSubmitModalLabel">Xác nhận nộp bài</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn nộp bài?</p>
+                    <div id="unanswered-warning" class="d-none">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Bạn còn <span id="unanswered-count">0</span> câu hỏi chưa trả lời.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="button" class="btn btn-success" id="confirm-submit">Nộp bài</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .exercise-option {
+        border: 1px solid #e3e6f0;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .exercise-option:hover {
+        background-color: #f8f9fc;
+    }
+    
+    .exercise-option.selected {
+        border-color: var(--primary-color);
+        background-color: rgba(78, 115, 223, 0.1);
+    }
+    
+    .question-nav-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .question-nav-btn.btn-success {
+        border-color: var(--secondary-color);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Variables
+        const exerciseForm = document.getElementById('exercise-form');
+        const questions = document.querySelectorAll('.question-container');
+        const currentQuestionSpan = document.getElementById('current-question');
+        const prevQuestionBtn = document.getElementById('prev-question');
+        const nextQuestionBtn = document.getElementById('next-question');
+        const submitExerciseBtn = document.getElementById('submit-exercise');
+        const confirmSubmitBtn = document.getElementById('confirm-submit');
+        const questionNavBtns = document.querySelectorAll('.question-nav-btn');
+        const timerMinutes = document.getElementById('timer-minutes');
+        const timerSeconds = document.getElementById('timer-seconds');
+        const timeSpentInput = document.getElementById('time-spent');
+        
+        let currentQuestionIndex = 1;
+        let totalQuestions = questions.length;
+        let startTime = new Date();
+        let timeLeft = {{ exercise.time_limit * 60 }};
+        let timerInterval;
+        
+        // Initialize timer
+        startTimer();
+        
+        // Exercise option selection
+        document.querySelectorAll('.exercise-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const radioInput = this.querySelector('input[type="radio"]');
+                if (radioInput) {
+                    radioInput.checked = true;
+                    
+                    // Update styles
+                    const optionsContainer = this.closest('.options-container');
+                    optionsContainer.querySelectorAll('.exercise-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    
+                    // Update navigation button
+                    const questionContainer = this.closest('.question-container');
+                    const questionIndex = questionContainer.getAttribute('data-question-index');
+                    const navBtn = document.querySelector(`.question-nav-btn[data-question="${questionIndex}"]`);
+                    if (navBtn) {
+                        navBtn.classList.remove('btn-outline-primary');
+                        navBtn.classList.add('btn-success');
+                    }
+                }
+            });
+        });
+        
+        // Navigation between questions
+        function showQuestion(index) {
+            if (index < 1 || index > totalQuestions) return;
+            
+            questions.forEach(question => question.classList.add('d-none'));
+            questions[index - 1].classList.remove('d-none');
+            
+            currentQuestionIndex = index;
+            currentQuestionSpan.textContent = index;
+            
+            // Update navigation buttons
+            prevQuestionBtn.disabled = (index === 1);
+            nextQuestionBtn.innerHTML = (index === totalQuestions) 
+                ? 'Hoàn thành' 
+                : 'Câu tiếp theo<i class="fas fa-arrow-right ms-2"></i>';
+        }
+        
+        // Navigation buttons
+        prevQuestionBtn.addEventListener('click', function() {
+            showQuestion(currentQuestionIndex - 1);
+        });
+        
+        nextQuestionBtn.addEventListener('click', function() {
+            if (currentQuestionIndex < totalQuestions) {
+                showQuestion(currentQuestionIndex + 1);
+            } else {
+                // If on last question, show submission confirmation
+                showSubmitConfirmation();
+            }
+        });
+        
+        // Question navigation buttons
+        questionNavBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const questionIndex = parseInt(this.getAttribute('data-question'));
+                showQuestion(questionIndex);
+            });
+        });
+        
+        // Submit exercise
+        submitExerciseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showSubmitConfirmation();
+        });
+        
+        function showSubmitConfirmation() {
+            const answeredQuestions = document.querySelectorAll('.question-nav-btn.btn-success').length;
+            const unansweredWarning = document.getElementById('unanswered-warning');
+            const unansweredCount = document.getElementById('unanswered-count');
+            
+            if (answeredQuestions < totalQuestions) {
+                unansweredWarning.classList.remove('d-none');
+                unansweredCount.textContent = totalQuestions - answeredQuestions;
+            } else {
+                unansweredWarning.classList.add('d-none');
+            }
+            
+            const confirmSubmitModal = new bootstrap.Modal(document.getElementById('confirmSubmitModal'));
+            confirmSubmitModal.show();
+        }
+        
+        confirmSubmitBtn.addEventListener('click', function() {
+            // Calculate time spent
+            const now = new Date();
+            const timeSpent = Math.round((now - startTime) / 1000);
+            timeSpentInput.value = timeSpent;
+            
+            // Submit the form
+            exerciseForm.submit();
+        });
+        
+        // Timer functionality
+        function startTimer() {
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmit();
+                }
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                timerMinutes.textContent = minutes.toString().padStart(2, '0');
+                timerSeconds.textContent = seconds.toString().padStart(2, '0');
+                
+                // Change color when time is running out
+                if (timeLeft <= 60) { // Less than 1 minute
+                    document.getElementById('exercise-timer').classList.add('text-danger');
+                }
+            }, 1000);
+        }
+        
+        function autoSubmit() {
+            alert('Hết thời gian! Bài tập sẽ được tự động nộp.');
+            const timeSpent = {{ exercise.time_limit * 60 }};
+            timeSpentInput.value = timeSpent;
+            exerciseForm.submit();
+        }
+        
+        // Speaking questions functionality (simulation)
+        document.querySelectorAll('[id^="record-button-"]').forEach(button => {
+            button.addEventListener('click', function() {
+                const questionId = this.id.split('-').pop();
+                
+                // Show stop button, hide record button
+                this.classList.add('d-none');
+                document.getElementById(`stop-button-${questionId}`).classList.remove('d-none');
+                
+                // In a real implementation, this would start recording
+                alert('Đã bắt đầu ghi âm. Tính năng này đang được mô phỏng.');
+            });
+        });
+        
+        document.querySelectorAll('[id^="stop-button-"]').forEach(button => {
+            button.addEventListener('click', function() {
+                const questionId = this.id.split('-').pop();
+                
+                // Hide stop button, show play button
+                this.classList.add('d-none');
+                document.getElementById(`play-button-${questionId}`).classList.remove('d-none');
+                document.getElementById(`audio-container-${questionId}`).classList.remove('d-none');
+                
+                // In a real implementation, this would stop recording and save the audio
+                document.getElementById(`answer_${questionId}`).value = "audio_recording_" + Date.now() + ".mp3";
+                
+                // Update navigation button
+                const questionContainer = this.closest('.question-container');
+                const questionIndex = questionContainer.getAttribute('data-question-index');
+                const navBtn = document.querySelector(`.question-nav-btn[data-question="${questionIndex}"]`);
+                if (navBtn) {
+                    navBtn.classList.remove('btn-outline-primary');
+                    navBtn.classList.add('btn-success');
+                }
+            });
+        });
+        
+        document.querySelectorAll('[id^="play-button-"]').forEach(button => {
+            button.addEventListener('click', function() {
+                // In a real implementation, this would play the recorded audio
+                alert('Tính năng nghe lại đang được mô phỏng.');
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

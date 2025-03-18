@@ -1,311 +1,291 @@
 {% extends "base.html" %}
-{% from "macros.html" import course_card %}
 
-{% block title %}Khóa học - VietEnglish{% endblock %}
+{% block title %}Khóa học - AI English Learning{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4 align-items-center">
-        <div class="col-lg-8">
-            <h1 class="mb-0">
-                <i class="fas fa-book me-2 text-primary"></i>Khóa học
-            </h1>
-            <p class="lead text-muted mt-2">Khám phá các khóa học tiếng Anh phù hợp với trình độ của bạn</p>
-        </div>
-        <div class="col-lg-4">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Tìm kiếm khóa học..." id="searchCourse">
-                <button class="btn btn-primary" type="button" id="searchButton">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-        </div>
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Khóa học</h1>
     </div>
-
+    
     <!-- Filters -->
-    <div class="card shadow-sm mb-4">
+    <div class="card shadow mb-4">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-3 mb-3 mb-md-0">
-                    <label for="levelFilter" class="form-label">Trình độ</label>
-                    <select class="form-select" id="levelFilter">
-                        <option value="">Tất cả trình độ</option>
-                        <option value="Beginner (A1)">Beginner (A1)</option>
-                        <option value="Elementary (A2)">Elementary (A2)</option>
-                        <option value="Intermediate (B1)">Intermediate (B1)</option>
-                        <option value="Upper Intermediate (B2)">Upper Intermediate (B2)</option>
-                        <option value="Advanced (C1)">Advanced (C1)</option>
-                        <option value="Proficient (C2)">Proficient (C2)</option>
-                    </select>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm khóa học..." id="searchCourse">
+                        <button class="btn btn-primary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-3 mb-3 mb-md-0">
-                    <label for="topicFilter" class="form-label">Chủ đề</label>
-                    <select class="form-select" id="topicFilter">
-                        <option value="">Tất cả chủ đề</option>
-                        <option value="General English">Tiếng Anh tổng quát</option>
-                        <option value="Business English">Tiếng Anh thương mại</option>
-                        <option value="Academic English">Tiếng Anh học thuật</option>
-                        <option value="IELTS">Luyện thi IELTS</option>
-                        <option value="TOEIC">Luyện thi TOEIC</option>
-                        <option value="Conversation">Giao tiếp</option>
-                    </select>
-                </div>
-                <div class="col-md-3 mb-3 mb-md-0">
-                    <label for="durationFilter" class="form-label">Thời lượng</label>
-                    <select class="form-select" id="durationFilter">
-                        <option value="">Tất cả thời lượng</option>
-                        <option value="4">≤ 4 tuần</option>
-                        <option value="8">≤ 8 tuần</option>
-                        <option value="12">≤ 12 tuần</option>
-                        <option value="16">≤ 16 tuần</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button class="btn btn-primary w-100" id="applyFilters">
-                        <i class="fas fa-filter me-1"></i> Lọc khóa học
-                    </button>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-md-end mt-3 mt-md-0">
+                        <div class="btn-group me-2" role="group">
+                            <button type="button" class="btn btn-outline-primary active" data-filter="all">Tất cả</button>
+                            <button type="button" class="btn btn-outline-primary" data-filter="enrolled">Đã đăng ký</button>
+                            <button type="button" class="btn btn-outline-primary" data-filter="recommended">Đề xuất</button>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="levelFilter" data-bs-toggle="dropdown" aria-expanded="false">
+                                Trình độ
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="levelFilter">
+                                <li><button class="dropdown-item active" data-level="all">Tất cả cấp độ</button></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button class="dropdown-item" data-level="a1">Beginner (A1)</button></li>
+                                <li><button class="dropdown-item" data-level="a2">Elementary (A2)</button></li>
+                                <li><button class="dropdown-item" data-level="b1">Intermediate (B1)</button></li>
+                                <li><button class="dropdown-item" data-level="b2">Upper Intermediate (B2)</button></li>
+                                <li><button class="dropdown-item" data-level="c1">Advanced (C1)</button></li>
+                                <li><button class="dropdown-item" data-level="c2">Proficient (C2)</button></li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Recommended Courses -->
-    {% if user_profile and user_profile.language_level %}
-    <div class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">
-                <i class="fas fa-star text-warning me-2"></i>Khóa học đề xuất cho bạn
-            </h2>
+    
+    <!-- Your Enrolled Courses -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Khóa học của bạn</h6>
+            <button class="btn btn-sm btn-outline-primary enrolled-toggle" data-toggle="collapse" data-target="#enrolledCoursesCollapse" aria-expanded="true">
+                <i class="fas fa-chevron-down"></i>
+            </button>
         </div>
-        
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="recommendedCourses">
-            {% for course in recommended_courses %}
-                <div class="col course-item" 
-                     data-level="{{ course.level }}" 
-                     data-topic="{{ course.topic }}" 
-                     data-duration="{{ course.duration_weeks }}">
-                    {{ course_card(course, enrolled=(course.id in enrolled_course_ids)) }}
-                </div>
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>Chưa có khóa học được đề xuất cho bạn.
+        <div class="collapse show" id="enrolledCoursesCollapse">
+            <div class="card-body">
+                {% if enrolled_course_ids %}
+                    <div class="row">
+                        {% for course in enrolled_courses %}
+                            <div class="col-xl-3 col-lg-4 col-md-6 mb-4 course-card-container" data-level="{{ course.level|lower|replace(' ', '-') }}">
+                                {% include 'components/course_card.html' %}
+                            </div>
+                        {% endfor %}
                     </div>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Beginner Courses -->
-    <div class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">
-                <i class="fas fa-seedling text-success me-2"></i>Khóa học cho người mới bắt đầu
-            </h2>
-            <div class="d-none d-md-block">
-                <button class="btn btn-outline-primary btn-sm section-toggle" data-section="beginnerCourses">
-                    <i class="fas fa-chevron-up"></i>
-                </button>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-book fa-3x text-gray-300 mb-3"></i>
+                        <p class="mb-0">Bạn chưa đăng ký khóa học nào</p>
+                        <p class="text-muted">Khám phá các khóa học bên dưới để bắt đầu học tập</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
-        
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="beginnerCourses">
-            {% for course in beginner_courses %}
-                <div class="col course-item" 
-                     data-level="{{ course.level }}" 
-                     data-topic="{{ course.topic }}" 
-                     data-duration="{{ course.duration_weeks }}">
-                    {{ course_card(course, enrolled=(course.id in enrolled_course_ids)) }}
-                </div>
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>Chưa có khóa học nào cho trình độ này.
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
     </div>
-
-    <!-- Intermediate Courses -->
-    <div class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">
-                <i class="fas fa-chart-line text-primary me-2"></i>Khóa học trình độ trung cấp
-            </h2>
-            <div class="d-none d-md-block">
-                <button class="btn btn-outline-primary btn-sm section-toggle" data-section="intermediateCourses">
-                    <i class="fas fa-chevron-up"></i>
-                </button>
+    
+    <!-- Courses by Level -->
+    <!-- Beginner Courses (A1-A2) -->
+    <div class="card shadow mb-4 level-section" id="beginner-courses">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Khóa học cơ bản (A1-A2)</h6>
+            <button class="btn btn-sm btn-outline-primary level-toggle" data-toggle="collapse" data-target="#beginnerCoursesCollapse" aria-expanded="true">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div class="collapse show" id="beginnerCoursesCollapse">
+            <div class="card-body">
+                {% if beginner_courses %}
+                    <div class="row">
+                        {% for course in beginner_courses %}
+                            <div class="col-xl-3 col-lg-4 col-md-6 mb-4 course-card-container" data-level="{{ course.level|lower|replace(' ', '-') }}" data-enrolled="{{ 'true' if course.id in enrolled_course_ids else 'false' }}">
+                                {% include 'components/course_card.html' %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">Không có khóa học ở cấp độ này</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
-        
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="intermediateCourses">
-            {% for course in intermediate_courses %}
-                <div class="col course-item" 
-                     data-level="{{ course.level }}" 
-                     data-topic="{{ course.topic }}" 
-                     data-duration="{{ course.duration_weeks }}">
-                    {{ course_card(course, enrolled=(course.id in enrolled_course_ids)) }}
-                </div>
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>Chưa có khóa học nào cho trình độ này.
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
     </div>
-
-    <!-- Advanced Courses -->
-    <div class="mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">
-                <i class="fas fa-graduation-cap text-danger me-2"></i>Khóa học nâng cao
-            </h2>
-            <div class="d-none d-md-block">
-                <button class="btn btn-outline-primary btn-sm section-toggle" data-section="advancedCourses">
-                    <i class="fas fa-chevron-up"></i>
-                </button>
+    
+    <!-- Intermediate Courses (B1-B2) -->
+    <div class="card shadow mb-4 level-section" id="intermediate-courses">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Khóa học trung cấp (B1-B2)</h6>
+            <button class="btn btn-sm btn-outline-primary level-toggle" data-toggle="collapse" data-target="#intermediateCoursesCollapse" aria-expanded="true">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div class="collapse show" id="intermediateCoursesCollapse">
+            <div class="card-body">
+                {% if intermediate_courses %}
+                    <div class="row">
+                        {% for course in intermediate_courses %}
+                            <div class="col-xl-3 col-lg-4 col-md-6 mb-4 course-card-container" data-level="{{ course.level|lower|replace(' ', '-') }}" data-enrolled="{{ 'true' if course.id in enrolled_course_ids else 'false' }}">
+                                {% include 'components/course_card.html' %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">Không có khóa học ở cấp độ này</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
-        
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="advancedCourses">
-            {% for course in advanced_courses %}
-                <div class="col course-item" 
-                     data-level="{{ course.level }}" 
-                     data-topic="{{ course.topic }}" 
-                     data-duration="{{ course.duration_weeks }}">
-                    {{ course_card(course, enrolled=(course.id in enrolled_course_ids)) }}
-                </div>
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>Chưa có khóa học nào cho trình độ này.
+    </div>
+    
+    <!-- Advanced Courses (C1-C2) -->
+    <div class="card shadow mb-4 level-section" id="advanced-courses">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Khóa học nâng cao (C1-C2)</h6>
+            <button class="btn btn-sm btn-outline-primary level-toggle" data-toggle="collapse" data-target="#advancedCoursesCollapse" aria-expanded="true">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div class="collapse show" id="advancedCoursesCollapse">
+            <div class="card-body">
+                {% if advanced_courses %}
+                    <div class="row">
+                        {% for course in advanced_courses %}
+                            <div class="col-xl-3 col-lg-4 col-md-6 mb-4 course-card-container" data-level="{{ course.level|lower|replace(' ', '-') }}" data-enrolled="{{ 'true' if course.id in enrolled_course_ids else 'false' }}">
+                                {% include 'components/course_card.html' %}
+                            </div>
+                        {% endfor %}
                     </div>
-                </div>
-            {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">Không có khóa học ở cấp độ này</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Toggle sections
-        const sectionToggles = document.querySelectorAll('.section-toggle');
-        sectionToggles.forEach(toggle => {
-            toggle.addEventListener('click', function() {
-                const sectionId = this.getAttribute('data-section');
-                const section = document.getElementById(sectionId);
-                
-                if (section.classList.contains('d-none')) {
-                    section.classList.remove('d-none');
-                    this.querySelector('i').classList.remove('fa-chevron-down');
-                    this.querySelector('i').classList.add('fa-chevron-up');
-                } else {
-                    section.classList.add('d-none');
-                    this.querySelector('i').classList.remove('fa-chevron-up');
-                    this.querySelector('i').classList.add('fa-chevron-down');
-                }
-            });
-        });
+        // Filter buttons functionality
+        const filterButtons = document.querySelectorAll('[data-filter]');
+        const levelButtons = document.querySelectorAll('[data-level]');
+        const courseCards = document.querySelectorAll('.course-card-container');
         
-        // Filter and search
-        const applyFiltersButton = document.getElementById('applyFilters');
-        const searchButton = document.getElementById('searchButton');
+        // Search functionality
         const searchInput = document.getElementById('searchCourse');
         
-        function filterCourses() {
-            const levelFilter = document.getElementById('levelFilter').value;
-            const topicFilter = document.getElementById('topicFilter').value;
-            const durationFilter = document.getElementById('durationFilter').value;
+        // Apply filters
+        function applyFilters() {
+            const activeFilter = document.querySelector('[data-filter].active').getAttribute('data-filter');
+            const activeLevel = document.querySelector('[data-level].active').getAttribute('data-level');
             const searchTerm = searchInput.value.toLowerCase();
             
-            const courseItems = document.querySelectorAll('.course-item');
-            
-            courseItems.forEach(item => {
-                const level = item.getAttribute('data-level');
-                const topic = item.getAttribute('data-topic');
-                const duration = item.getAttribute('data-duration');
-                const title = item.querySelector('.card-title').textContent.toLowerCase();
-                const description = item.querySelector('.card-text').textContent.toLowerCase();
+            courseCards.forEach(card => {
+                const level = card.getAttribute('data-level');
+                const enrolled = card.getAttribute('data-enrolled') === 'true';
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const description = card.querySelector('.card-text').textContent.toLowerCase();
                 
-                // Check if the course matches all filters
-                const matchesLevel = !levelFilter || level === levelFilter;
-                const matchesTopic = !topicFilter || topic === topicFilter;
-                const matchesDuration = !durationFilter || parseInt(duration) <= parseInt(durationFilter);
-                const matchesSearch = !searchTerm || 
-                                    title.includes(searchTerm) || 
-                                    description.includes(searchTerm);
+                let filterMatch = true;
+                let levelMatch = true;
+                let searchMatch = true;
                 
-                // Show/hide based on filter matches
-                if (matchesLevel && matchesTopic && matchesDuration && matchesSearch) {
-                    item.style.display = '';
-                } else {
-                    item.style.display = 'none';
+                // Filter match
+                if (activeFilter === 'enrolled' && !enrolled) {
+                    filterMatch = false;
+                } else if (activeFilter === 'recommended' && !card.classList.contains('recommended')) {
+                    filterMatch = false;
                 }
+                
+                // Level match
+                if (activeLevel !== 'all' && level !== activeLevel) {
+                    levelMatch = false;
+                }
+                
+                // Search match
+                if (searchTerm && !(title.includes(searchTerm) || description.includes(searchTerm))) {
+                    searchMatch = false;
+                }
+                
+                // Show/hide card
+                card.style.display = (filterMatch && levelMatch && searchMatch) ? 'block' : 'none';
             });
             
-            // Check if any sections are empty after filtering
-            checkEmptySections();
-        }
-        
-        function checkEmptySections() {
-            const sections = ['recommendedCourses', 'beginnerCourses', 'intermediateCourses', 'advancedCourses'];
-            
-            sections.forEach(sectionId => {
-                const section = document.getElementById(sectionId);
-                if (!section) return;
+            // Hide level sections if no visible courses
+            document.querySelectorAll('.level-section').forEach(section => {
+                const sectionId = section.id;
+                let hasVisibleCourses = false;
                 
-                const visibleCourses = section.querySelectorAll('.course-item[style=""]');
-                const emptyMessage = section.querySelector('.alert');
-                
-                if (visibleCourses.length === 0) {
-                    if (!emptyMessage) {
-                        const alertDiv = document.createElement('div');
-                        alertDiv.className = 'col-12';
-                        alertDiv.innerHTML = `
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>Không tìm thấy khóa học phù hợp với bộ lọc.
-                            </div>
-                        `;
-                        section.appendChild(alertDiv);
-                    }
-                } else {
-                    if (emptyMessage) {
-                        emptyMessage.closest('.col-12').remove();
-                    }
+                // Check if section has any visible courses
+                if (sectionId === 'beginner-courses') {
+                    hasVisibleCourses = Array.from(document.querySelectorAll('[data-level="beginner-(a1)"], [data-level="elementary-(a2)"]'))
+                        .some(card => card.style.display !== 'none');
+                } else if (sectionId === 'intermediate-courses') {
+                    hasVisibleCourses = Array.from(document.querySelectorAll('[data-level="intermediate-(b1)"], [data-level="upper-intermediate-(b2)"]'))
+                        .some(card => card.style.display !== 'none');
+                } else if (sectionId === 'advanced-courses') {
+                    hasVisibleCourses = Array.from(document.querySelectorAll('[data-level="advanced-(c1)"], [data-level="proficient-(c2)"]'))
+                        .some(card => card.style.display !== 'none');
                 }
+                
+                section.style.display = hasVisibleCourses ? 'block' : 'none';
             });
         }
         
-        // Attach event listeners
-        applyFiltersButton.addEventListener('click', filterCourses);
-        
-        searchButton.addEventListener('click', filterCourses);
-        
-        searchInput.addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') {
-                filterCourses();
-            }
+        // Filter button click handler
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                applyFilters();
+            });
         });
         
-        // Add animation to course cards
-        const cards = document.querySelectorAll('.card');
-        cards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-10px)';
-                this.style.transition = 'transform 0.3s ease';
+        // Level button click handler
+        levelButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                levelButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update dropdown button text
+                if (this.closest('.dropdown-menu')) {
+                    const dropdownButton = document.getElementById('levelFilter');
+                    if (this.getAttribute('data-level') === 'all') {
+                        dropdownButton.textContent = 'Trình độ';
+                    } else {
+                        dropdownButton.textContent = this.textContent;
+                    }
+                }
+                
+                applyFilters();
             });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
+        });
+        
+        // Search input handler
+        searchInput.addEventListener('keyup', applyFilters);
+        
+        // Toggle handlers for collapsible sections
+        document.querySelectorAll('.level-toggle, .enrolled-toggle').forEach(button => {
+            button.addEventListener('click', function() {
+                const target = document.querySelector(this.getAttribute('data-target'));
+                if (target) {
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !isExpanded);
+                    target.classList.toggle('show');
+                    
+                    // Update icon
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        if (isExpanded) {
+                            icon.classList.remove('fa-chevron-down');
+                            icon.classList.add('fa-chevron-right');
+                        } else {
+                            icon.classList.remove('fa-chevron-right');
+                            icon.classList.add('fa-chevron-down');
+                        }
+                    }
+                }
             });
         });
     });
 </script>
+{% endblock %}
 {% endblock %}

@@ -1,0 +1,153 @@
+<!-- Brand -->
+<div class="sidebar-brand d-flex align-items-center justify-content-center py-4">
+    <div class="sidebar-brand-icon">
+        <i class="fas fa-graduation-cap"></i>
+    </div>
+    <div class="sidebar-brand-text mx-3 text-white">AI English</div>
+</div>
+
+<!-- Divider -->
+<hr class="sidebar-divider my-0">
+
+<!-- Nav Items -->
+<ul class="nav flex-column">
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Bảng điều khiển</span>
+        </a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'placement_test' or request.endpoint == 'take_test' %}active{% endif %}" href="{{ url_for('placement_test') }}">
+            <i class="fas fa-fw fa-diagnoses"></i>
+            <span>Bài test xếp loại</span>
+        </a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'courses' %}active{% endif %}" href="{{ url_for('courses') }}">
+            <i class="fas fa-fw fa-book"></i>
+            <span>Khóa học</span>
+        </a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'statistics' %}active{% endif %}" href="{{ url_for('user_statistics') }}">
+            <i class="fas fa-fw fa-chart-line"></i>
+            <span>Thống kê học tập</span>
+        </a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'leaderboard' %}active{% endif %}" href="{{ url_for('leaderboard') }}">
+            <i class="fas fa-fw fa-trophy"></i>
+            <span>Bảng xếp hạng</span>
+        </a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'badges' %}active{% endif %}" href="{{ url_for('badges') }}">
+            <i class="fas fa-fw fa-award"></i>
+            <span>Huy hiệu</span>
+        </a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'notifications' %}active{% endif %}" href="{{ url_for('notifications') }}">
+            <i class="fas fa-fw fa-bell"></i>
+            <span>Thông báo</span>
+            {% if get_unread_notifications_count() > 0 %}
+                <span class="badge rounded-pill bg-danger ms-2">{{ get_unread_notifications_count() }}</span>
+            {% endif %}
+        </a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}">
+            <i class="fas fa-fw fa-user"></i>
+            <span>Hồ sơ cá nhân</span>
+        </a>
+    </li>
+    
+    <!-- Admin menu items - only visible for admins -->
+    {% if current_user.role == 'admin' %}
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+        
+        <!-- Heading -->
+        <div class="sidebar-heading text-white-50 px-3 py-2 text-uppercase fs-6">
+            Quản trị viên
+        </div>
+        
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-fw fa-tools"></i>
+                <span>Admin Dashboard</span>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}" href="{{ url_for('admin_users') }}">
+                <i class="fas fa-fw fa-users"></i>
+                <span>Quản lý người dùng</span>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'admin_courses' %}active{% endif %}" href="{{ url_for('admin_courses') }}">
+                <i class="fas fa-fw fa-book"></i>
+                <span>Quản lý khóa học</span>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'admin_tests' %}active{% endif %}" href="{{ url_for('admin_tests') }}">
+                <i class="fas fa-fw fa-tasks"></i>
+                <span>Quản lý bài test</span>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'admin_badges' %}active{% endif %}" href="{{ url_for('admin_badges') }}">
+                <i class="fas fa-fw fa-award"></i>
+                <span>Quản lý huy hiệu</span>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'admin_reports' %}active{% endif %}" href="{{ url_for('admin_reports') }}">
+                <i class="fas fa-fw fa-chart-area"></i>
+                <span>Báo cáo hệ thống</span>
+            </a>
+        </li>
+    {% endif %}
+    
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+    
+    <!-- Log out -->
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('logout') }}">
+            <i class="fas fa-fw fa-sign-out-alt"></i>
+            <span>Đăng xuất</span>
+        </a>
+    </li>
+</ul>
+
+<!-- Current level indicator if available -->
+{% if current_user.profile and current_user.profile.language_level %}
+    <div class="position-absolute bottom-0 start-0 end-0 p-3 text-center text-white">
+        <p class="mb-1">Trình độ hiện tại:</p>
+        <span class="badge text-white 
+            {% if current_user.profile.language_level == 'Beginner (A1)' %}badge-a1
+            {% elif current_user.profile.language_level == 'Elementary (A2)' %}badge-a2
+            {% elif current_user.profile.language_level == 'Intermediate (B1)' %}badge-b1
+            {% elif current_user.profile.language_level == 'Upper Intermediate (B2)' %}badge-b2
+            {% elif current_user.profile.language_level == 'Advanced (C1)' %}badge-c1
+            {% elif current_user.profile.language_level == 'Proficient (C2)' %}badge-c2
+            {% endif %}">
+            {{ current_user.profile.language_level }}
+        </span>
+    </div>
+{% endif %}

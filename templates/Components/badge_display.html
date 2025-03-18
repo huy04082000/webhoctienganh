@@ -1,0 +1,33 @@
+<div class="badge-display">
+    {% if badge.id in earned_badge_ids %}
+        <div class="position-relative">
+            <img src="{{ url_for('static', filename='uploads/' + badge.image) }}" alt="{{ badge.name }}" class="img-fluid mb-2">
+            <span class="position-absolute top-0 end-0">
+                <i class="fas fa-check-circle text-success"></i>
+            </span>
+        </div>
+        <h6 class="mb-1">{{ badge.name }}</h6>
+        <small class="text-muted">{{ badge.description }}</small>
+    {% else %}
+        <div class="position-relative opacity-50">
+            <img src="{{ url_for('static', filename='uploads/' + badge.image) }}" alt="{{ badge.name }}" class="img-fluid mb-2 grayscale">
+            <span class="position-absolute top-0 end-0">
+                <i class="fas fa-lock text-secondary"></i>
+            </span>
+        </div>
+        <h6 class="mb-1">{{ badge.name }}</h6>
+        <small class="text-muted">
+            {% if badge.requirement_type == 'points' %}
+                Đạt {{ badge.requirement_value }} điểm
+            {% elif badge.requirement_type == 'streak' %}
+                Học {{ badge.requirement_value }} ngày liên tiếp
+            {% elif badge.requirement_type == 'tests' %}
+                Hoàn thành {{ badge.requirement_value }} bài test
+            {% elif badge.requirement_type == 'courses' %}
+                Hoàn thành {{ badge.requirement_value }} khóa học
+            {% else %}
+                {{ badge.description }}
+            {% endif %}
+        </small>
+    {% endif %}
+</div>

@@ -3,743 +3,725 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VietEnglish - Nền tảng học tiếng Anh với trợ lý AI</title>
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
-    
+    <title>AI English Learning - Học tiếng Anh thông minh cùng AI</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- AOS Animation library -->
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- AOS Animation Library -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
     <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --success-color: #4cc9f0;
-            --info-color: #4895ef;
-            --warning-color: #f72585;
-            --danger-color: #ff4d6d;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+            --accent-color: #f6c23e;
+            --danger-color: #e74a3b;
+            --dark-color: #5a5c69;
+            --light-color: #f8f9fc;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Nunito', 'Segoe UI', Roboto, sans-serif;
             color: #333;
+            overflow-x: hidden;
+        }
+        
+        /* Navigation */
+        .navbar {
+            transition: all 0.3s ease;
+            padding: 1rem 1rem;
+        }
+        
+        .navbar.scrolled {
+            background-color: white !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 1rem;
+        }
+        
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary-color) !important;
+        }
+        
+        .nav-link {
+            font-weight: 600;
+            margin-left: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
         }
         
         /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+        #hero {
+            background-image: linear-gradient(135deg, rgba(78, 115, 223, 0.9) 0%, rgba(28, 200, 138, 0.9) 100%), url('/static/images/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
             color: white;
-            padding: 100px 0;
-            margin-bottom: 80px;
+            padding: 8rem 0;
             position: relative;
-            overflow: hidden;
         }
         
-        .hero::before {
-            content: '';
+        #hero .overlay-shape {
             position: absolute;
-            top: 0;
+            bottom: -1px;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('https://images.unsplash.com/photo-1532012197267-da84d127e765?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80') center/cover;
-            opacity: 0.1;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
         }
         
-        .hero-content {
-            position: relative;
-            z-index: 1;
+        #hero .overlay-shape svg {
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 61px;
+            transform: rotateY(180deg);
         }
         
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
+        #hero .overlay-shape .shape-fill {
+            fill: #FFFFFF;
+        }
+        
+        .hero-title {
+            font-weight: 800;
+            font-size: 3rem;
             margin-bottom: 1.5rem;
         }
         
-        .hero p {
-            font-size: 1.25rem;
+        .hero-text {
+            font-size: 1.2rem;
             margin-bottom: 2rem;
             opacity: 0.9;
         }
         
-        .hero-img {
-            max-width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        /* Features Section */
+        .features-section {
+            padding: 5rem 0;
         }
         
-        /* Features */
-        .feature-card {
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        .feature-box {
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            background-color: white;
             transition: all 0.3s;
             height: 100%;
-            border: none;
         }
         
-        .feature-card:hover {
+        .feature-box:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
         
         .feature-icon {
             width: 80px;
             height: 80px;
             border-radius: 50%;
+            background-color: rgba(78, 115, 223, 0.1);
+            color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
             font-size: 2rem;
+            margin-bottom: 1.5rem;
         }
         
-        .feature-icon.ai {
-            background: linear-gradient(135deg, #4cc9f0, #4895ef);
-            color: white;
+        .feature-title {
+            font-weight: 700;
+            margin-bottom: 1rem;
         }
         
-        .feature-icon.levels {
-            background: linear-gradient(135deg, #4361ee, #3f37c9);
-            color: white;
+        /* About Section */
+        .about-section {
+            padding: 5rem 0;
+            background-color: #f9f9f9;
         }
         
-        .feature-icon.personalized {
-            background: linear-gradient(135deg, #f72585, #ff4d6d);
-            color: white;
+        .about-img {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
         
-        .feature-icon.interactive {
-            background: linear-gradient(135deg, #7209b7, #560bad);
-            color: white;
+        .about-title {
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+        }
+        
+        .about-text {
+            margin-bottom: 1.5rem;
+            color: #666;
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Courses Section */
+        .courses-section {
+            padding: 5rem 0;
         }
         
         .section-title {
-            position: relative;
-            margin-bottom: 50px;
-            padding-bottom: 20px;
+            font-weight: 800;
+            margin-bottom: 3rem;
             text-align: center;
+            position: relative;
+            padding-bottom: 1.5rem;
         }
         
         .section-title::after {
             content: '';
             position: absolute;
-            width: 100px;
-            height: 3px;
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            bottom: 0;
             left: 50%;
+            bottom: 0;
+            width: 80px;
+            height: 4px;
+            background-color: var(--primary-color);
             transform: translateX(-50%);
         }
         
-        /* How It Works */
-        .step-card {
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            position: relative;
-            z-index: 1;
-            background: white;
+        .course-card {
+            border: none;
+            border-radius: 1rem;
+            overflow: hidden;
             transition: all 0.3s;
+            height: 100%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
         
-        .step-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
         
-        .step-number {
+        .course-img {
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .course-level {
             position: absolute;
-            top: -20px;
-            left: -20px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            z-index: 2;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
         }
         
-        /* Testimonials */
-        .testimonial-section {
-            background-color: #f8f9fa;
-            padding: 80px 0;
-            margin: 80px 0;
+        .level-beginner {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .level-intermediate {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .level-advanced {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Testimonials Section */
+        .testimonials-section {
+            padding: 5rem 0;
+            background-color: #f9f9f9;
         }
         
         .testimonial-card {
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            border-radius: 1rem;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
             position: relative;
-            margin: 40px 20px;
-            background: white;
-        }
-        
-        .testimonial-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid white;
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .testimonial-body {
-            padding: 60px 30px 30px;
-        }
-        
-        /* Pricing */
-        .pricing-card {
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-            border: none;
             height: 100%;
         }
         
-        .pricing-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
-        
-        .pricing-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-        }
-        
-        .pricing-popular {
-            background: linear-gradient(135deg, var(--warning-color), var(--danger-color));
-        }
-        
-        .pricing-price {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0;
-        }
-        
-        .pricing-features {
-            list-style-type: none;
-            padding: 0;
-            margin: 20px 0;
-        }
-        
-        .pricing-features li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .pricing-features li i {
-            margin-right: 10px;
-            color: var(--success-color);
-        }
-        
-        /* Call to Action */
-        .cta-section {
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            color: white;
-            padding: 80px 0;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .cta-section::before {
-            content: '';
+        .testimonial-card::before {
+            content: '\201C';
+            font-size: 5rem;
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('https://images.unsplash.com/photo-1579547621113-e4bb2a19bdd6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80') center/cover;
-            opacity: 0.1;
+            top: -15px;
+            left: 10px;
+            color: rgba(78, 115, 223, 0.1);
+            font-family: Georgia, serif;
         }
         
-        .cta-content {
-            position: relative;
-            z-index: 1;
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            color: #666;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .testimonial-author-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1rem;
+        }
+        
+        .testimonial-author-name {
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+        
+        .testimonial-author-position {
+            font-size: 0.9rem;
+            color: #999;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 0;
+            background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .cta-title {
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-text {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
         }
         
         /* Footer */
         footer {
-            background: #212529;
+            background-color: #222;
             color: white;
-            padding: 50px 0 0;
+            padding: 5rem 0 2rem;
         }
         
-        .footer-logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 20px;
+        .footer-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
             display: block;
         }
         
-        .footer-social a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-            margin-right: 10px;
+        .footer-text {
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .footer-section h5 {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
             color: white;
-            transition: all 0.3s;
         }
         
-        .footer-social a:hover {
-            background: var(--primary-color);
-            transform: translateY(-3px);
-        }
-        
-        .footer-links h5 {
-            margin-bottom: 20px;
-            position: relative;
-            padding-bottom: 10px;
-        }
-        
-        .footer-links h5::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            height: 2px;
-            width: 50px;
-            background: var(--primary-color);
-        }
-        
-        .footer-links ul {
-            list-style-type: none;
+        .footer-links {
+            list-style: none;
             padding: 0;
+            margin: 0;
         }
         
-        .footer-links ul li {
-            margin-bottom: 10px;
+        .footer-links li {
+            margin-bottom: 0.8rem;
         }
         
-        .footer-links ul li a {
-            color: rgba(255,255,255,0.7);
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
             transition: all 0.3s;
         }
         
-        .footer-links ul li a:hover {
+        .footer-links a:hover {
             color: white;
-            padding-left: 5px;
+            text-decoration: none;
         }
         
-        .copyright {
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding: 20px 0;
-            margin-top: 40px;
+        .social-links {
+            display: flex;
+            margin-top: 1.5rem;
         }
         
-        /* Sticky navbar on scroll */
-        .navbar {
-            transition: all 0.3s;
-        }
-        
-        .navbar.sticky {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            animation: slideDown 0.5s;
-        }
-        
-        @keyframes slideDown {
-            from {
-                transform: translateY(-100%);
-            }
-            to {
-                transform: translateY(0);
-            }
-        }
-        
-        /* Navbar */
-        .navbar {
-            background: linear-gradient(to right, #4361ee, #3a0ca3);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-        
-        .nav-link {
-            position: relative;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .nav-link:hover {
-            color: white !important;
-        }
-        
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 0;
-            background-color: white;
-            transition: width 0.3s;
-        }
-        
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        
-        /* Back to top button */
-        .back-to-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            background: var(--primary-color);
-            color: white;
+        .social-links a {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-right: 1rem;
             transition: all 0.3s;
-            z-index: 99;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
-        .back-to-top.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .back-to-top:hover {
-            background: var(--secondary-color);
+        .social-links a:hover {
+            background-color: var(--primary-color);
             transform: translateY(-3px);
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 991.98px) {
-            .hero h1 {
+        .copyright {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: 2rem;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2e59d9;
+            border-color: #2e59d9;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(46, 89, 217, 0.2);
+        }
+        
+        .btn-outline-light {
+            border-radius: 2rem;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline-light:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            border-radius: 2rem;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #17a673;
+            border-color: #17a673;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(23, 166, 115, 0.2);
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .hero-title {
                 font-size: 2.5rem;
             }
             
-            .hero p {
-                font-size: 1.1rem;
-            }
-            
-            .hero {
-                padding: 70px 0;
-                margin-bottom: 60px;
-            }
-            
-            .section-title {
-                margin-bottom: 30px;
-            }
-            
-            .step-number {
-                width: 50px;
-                height: 50px;
-                font-size: 1.25rem;
+            .about-img {
+                margin-bottom: 2rem;
             }
         }
         
-        @media (max-width: 767.98px) {
-            .hero-img {
-                margin-top: 40px;
-            }
-            
-            .hero h1 {
+        @media (max-width: 768px) {
+            .hero-title {
                 font-size: 2rem;
             }
             
-            .hero {
-                padding: 50px 0;
-                margin-bottom: 40px;
+            .feature-box, .testimonial-card {
+                margin-bottom: 2rem;
             }
             
-            .testimonial-card {
-                margin: 50px 10px 20px;
+            .navbar-collapse {
+                background-color: white;
+                padding: 1rem;
+                border-radius: 0.5rem;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                margin-top: 1rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Header Navigation -->
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container">
-                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
-                    <i class="fas fa-graduation-cap me-2"></i>
-                    VietEnglish
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarMain">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link text-light" href="#features">Tính năng</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" href="#how-it-works">Cách học</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" href="#pricing">Gói học</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-light" href="#testimonials">Đánh giá</a>
-                        </li>
-                        {% if current_user.is_authenticated %}
-                            <li class="nav-item">
-                                <a class="btn btn-light ms-2" href="{{ url_for('dashboard') }}">
-                                    <i class="fas fa-user me-1"></i> Trang cá nhân
-                                </a>
-                            </li>
-                        {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link text-light" href="{{ url_for('login') }}">
-                                    <i class="fas fa-sign-in-alt me-1"></i> Đăng nhập
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-light ms-2" href="{{ url_for('register') }}">
-                                    <i class="fas fa-user-plus me-1"></i> Đăng ký
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </div>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-transparent fixed-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <i class="fas fa-graduation-cap me-2"></i>
+                AI English Learning
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Tính năng</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">Giới thiệu</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#courses">Khóa học</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#testimonials">Đánh giá</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-primary ms-lg-3" href="{{ url_for('login') }}">Đăng nhập</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary ms-lg-3" href="{{ url_for('register') }}">Đăng ký</a>
+                    </li>
+                </ul>
             </div>
-        </nav>
-    </header>
+        </div>
+    </nav>
 
     <!-- Hero Section -->
-    <section class="hero">
+    <section id="hero">
         <div class="container">
-            <div class="row align-items-center hero-content">
-                <div class="col-lg-6" data-aos="fade-right">
-                    <h1>Học tiếng Anh thông minh với trợ lý AI</h1>
-                    <p>Nâng cao kỹ năng tiếng Anh của bạn với hệ thống học tập thông minh, cá nhân hóa và có trợ lý AI hỗ trợ 24/7.</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
-                            <i class="fas fa-user-plus me-2"></i>Bắt đầu ngay
-                        </a>
-                        <a href="#how-it-works" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-play-circle me-2"></i>Tìm hiểu thêm
-                        </a>
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
+                    <h1 class="hero-title">Học tiếng Anh thông minh cùng công nghệ AI</h1>
+                    <p class="hero-text">Nền tảng học tập cá nhân hóa giúp bạn đạt được mục tiêu ngôn ngữ nhanh chóng và hiệu quả hơn với sự hỗ trợ của trí tuệ nhân tạo tiên tiến.</p>
+                    <div class="d-flex flex-wrap">
+                        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-3 mb-3 mb-lg-0">Bắt đầu ngay</a>
+                        <a href="#features" class="btn btn-outline-light btn-lg">Tìm hiểu thêm</a>
                     </div>
                 </div>
-                <div class="col-lg-6" data-aos="fade-left">
-                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" 
-                         alt="Học tiếng Anh" class="hero-img">
+                <div class="col-lg-6 d-none d-lg-block" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
+                    <img src="{{ url_for('static', filename='images/hero-img.png') }}" alt="AI English Learning" class="img-fluid">
                 </div>
             </div>
+        </div>
+        <div class="overlay-shape">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" class="shape-fill"></path>
+            </svg>
         </div>
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="py-5">
+    <section id="features" class="features-section">
         <div class="container">
             <h2 class="section-title" data-aos="fade-up">Tính năng nổi bật</h2>
-            
             <div class="row">
-                <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="feature-card text-center p-4">
-                        <div class="feature-icon ai">
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-box">
+                        <div class="feature-icon">
                             <i class="fas fa-robot"></i>
                         </div>
-                        <h4>Trợ lý AI</h4>
-                        <p>Học với trợ lý AI thông minh, hỗ trợ 24/7, giải đáp mọi thắc mắc của bạn ngay lập tức.</p>
+                        <h3 class="feature-title">AI cá nhân hóa</h3>
+                        <p>Hệ thống AI thông minh phân tích khả năng và tiến độ học tập để tạo lộ trình học tập phù hợp với từng người.</p>
                     </div>
                 </div>
-                
-                <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="feature-card text-center p-4">
-                        <div class="feature-icon levels">
-                            <i class="fas fa-layer-group"></i>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
                         </div>
-                        <h4>Đa dạng trình độ</h4>
-                        <p>Từ cơ bản (A1) đến nâng cao (C2), phù hợp với mọi học viên ở mọi trình độ khác nhau.</p>
+                        <h3 class="feature-title">Đánh giá chính xác</h3>
+                        <p>Hệ thống AI đánh giá chi tiết các kỹ năng ngôn ngữ, giúp xác định trình độ và điểm yếu cần cải thiện.</p>
                     </div>
                 </div>
-                
-                <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="300">
-                    <div class="feature-card text-center p-4">
-                        <div class="feature-icon personalized">
-                            <i class="fas fa-user-cog"></i>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fas fa-book"></i>
                         </div>
-                        <h4>Cá nhân hóa</h4>
-                        <p>Hệ thống đề xuất bài học phù hợp, theo dõi tiến trình và điều chỉnh kế hoạch học tập.</p>
+                        <h3 class="feature-title">Nội dung phong phú</h3>
+                        <p>Hàng trăm bài học và bài tập từ cơ bản đến nâng cao, phù hợp với mọi trình độ học viên.</p>
                     </div>
                 </div>
-                
-                <div class="col-md-6 col-lg-3 mb-4" data-aos="fade-up" data-aos-delay="400">
-                    <div class="feature-card text-center p-4">
-                        <div class="feature-icon interactive">
-                            <i class="fas fa-laptop-code"></i>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fas fa-comments"></i>
                         </div>
-                        <h4>Tương tác</h4>
-                        <p>Bài tập tương tác, phát âm, nhận diện giọng nói và phản hồi tức thì cho mỗi bài học.</p>
+                        <h3 class="feature-title">Luyện tập hội thoại</h3>
+                        <p>Tự tin giao tiếp tiếng Anh với công nghệ nhận diện và đánh giá phát âm tiên tiến.</p>
                     </div>
                 </div>
-            </div>
-            
-            <div class="text-center mt-4" data-aos="fade-up">
-                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-clipboard-list me-2"></i>Bắt đầu bài test miễn phí
-                </a>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="500">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">Theo dõi tiến độ</h3>
+                        <p>Xem thống kê chi tiết về quá trình học tập, từ điểm số đến thời gian học và các kỹ năng đã cải thiện.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="600">
+                    <div class="feature-box">
+                        <div class="feature-icon">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <h3 class="feature-title">Gamification</h3>
+                        <p>Hệ thống huy hiệu, điểm thưởng và bảng xếp hạng tạo động lực học tập thông qua tính cạnh tranh thú vị.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- How It Works Section -->
-    <section id="how-it-works" class="py-5 bg-light">
+    <!-- About Section -->
+    <section id="about" class="about-section">
         <div class="container">
-            <h2 class="section-title" data-aos="fade-up">Cách thức hoạt động</h2>
-            
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
+                    <div class="about-img">
+                        <img src="{{ url_for('static', filename='images/about-img.jpg') }}" alt="About AI English Learning" class="img-fluid">
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <h2 class="about-title">Tại sao chọn AI English Learning?</h2>
+                    <p class="about-text">AI English Learning sử dụng công nghệ trí tuệ nhân tạo tiên tiến để tạo ra trải nghiệm học tập tiếng Anh hoàn toàn cá nhân hóa. Hệ thống của chúng tôi phân tích khả năng ngôn ngữ của bạn, xác định điểm mạnh và điểm yếu, sau đó tạo ra lộ trình học tập tối ưu giúp bạn tiến bộ nhanh chóng.</p>
+                    <p class="about-text">Với đội ngũ chuyên gia ngôn ngữ kết hợp cùng các kỹ sư AI hàng đầu, chúng tôi đã phát triển một nền tảng học tập thông minh giúp học viên tiết kiệm thời gian và đạt hiệu quả cao nhất.</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-4 col-6">
+                            <div class="stat-box">
+                                <div class="stat-number">50K+</div>
+                                <div>Học viên</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-6">
+                            <div class="stat-box">
+                                <div class="stat-number">200+</div>
+                                <div>Khóa học</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-6 mx-auto">
+                            <div class="stat-box">
+                                <div class="stat-number">98%</div>
+                                <div>Hài lòng</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section id="courses" class="courses-section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Khóa học nổi bật</h2>
             <div class="row">
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="step-card">
-                        <div class="step-number">1</div>
-                        <h4 class="mb-3">Đánh giá trình độ</h4>
-                        <p>Làm bài kiểm tra xếp loại miễn phí để xác định trình độ tiếng Anh hiện tại của bạn.</p>
-                        <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" 
-                             alt="Đánh giá trình độ" class="img-fluid rounded mt-3">
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card course-card">
+                        <img src="{{ url_for('static', filename='images/course-1.jpg') }}" class="card-img-top course-img" alt="Course">
+                        <span class="course-level level-beginner">Beginner (A1)</span>
+                        <div class="card-body">
+                            <h5 class="card-title">Tiếng Anh cơ bản cho người mới bắt đầu</h5>
+                            <p class="card-text">Khóa học dành cho người mới học tiếng Anh, giúp xây dựng nền tảng vững chắc về từ vựng và ngữ pháp cơ bản.</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="text-muted">8 tuần</span>
+                                <a href="{{ url_for('login') }}" class="btn btn-primary">Xem chi tiết</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="step-card">
-                        <div class="step-number">2</div>
-                        <h4 class="mb-3">Lộ trình cá nhân hóa</h4>
-                        <p>Nhận lộ trình học tập cá nhân hóa dựa trên mục tiêu, sở thích và trình độ của bạn.</p>
-                        <img src="https://images.unsplash.com/photo-1606326608690-4e0281b1e588?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" 
-                             alt="Lộ trình cá nhân hóa" class="img-fluid rounded mt-3">
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card course-card">
+                        <img src="{{ url_for('static', filename='images/course-2.jpg') }}" class="card-img-top course-img" alt="Course">
+                        <span class="course-level level-intermediate">Intermediate (B1)</span>
+                        <div class="card-body">
+                            <h5 class="card-title">Tiếng Anh giao tiếp trong công việc</h5>
+                            <p class="card-text">Khóa học dành cho người đã có nền tảng tiếng Anh, muốn nâng cao kỹ năng giao tiếp trong môi trường công việc.</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="text-muted">10 tuần</span>
+                                <a href="{{ url_for('login') }}" class="btn btn-primary">Xem chi tiết</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
-                    <div class="step-card">
-                        <div class="step-number">3</div>
-                        <h4 class="mb-3">Học và thực hành</h4>
-                        <p>Học các bài học tương tác, thực hành với trợ lý AI và theo dõi tiến trình của bạn.</p>
-                        <img src="https://images.unsplash.com/photo-1456406644174-8ddd4cd52a06?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1168&q=80" 
-                             alt="Học và thực hành" class="img-fluid rounded mt-3">
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card course-card">
+                        <img src="{{ url_for('static', filename='images/course-3.jpg') }}" class="card-img-top course-img" alt="Course">
+                        <span class="course-level level-advanced">Advanced (C1)</span>
+                        <div class="card-body">
+                            <h5 class="card-title">Tiếng Anh học thuật nâng cao</h5>
+                            <p class="card-text">Khóa học chuyên sâu giúp hoàn thiện kỹ năng tiếng Anh học thuật cho mục đích nghiên cứu và giảng dạy.</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="text-muted">12 tuần</span>
+                                <a href="{{ url_for('login') }}" class="btn btn-primary">Xem chi tiết</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Statistics Section -->
-    <section class="py-5">
-        <div class="container">
-            <div class="row text-center">
-                <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="100">
-                    <h2 class="display-4 fw-bold text-primary">10,000+</h2>
-                    <p class="lead">Học viên</p>
-                </div>
-                
-                <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="200">
-                    <h2 class="display-4 fw-bold text-primary">500+</h2>
-                    <p class="lead">Bài học</p>
-                </div>
-                
-                <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="300">
-                    <h2 class="display-4 fw-bold text-primary">50+</h2>
-                    <p class="lead">Giáo viên</p>
-                </div>
-                
-                <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="400">
-                    <h2 class="display-4 fw-bold text-primary">4.8/5</h2>
-                    <p class="lead">Đánh giá</p>
-                </div>
+            <div class="text-center mt-4" data-aos="fade-up">
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Xem tất cả khóa học</a>
             </div>
         </div>
     </section>
 
     <!-- Testimonials Section -->
-    <section id="testimonials" class="testimonial-section">
+    <section id="testimonials" class="testimonials-section">
         <div class="container">
             <h2 class="section-title" data-aos="fade-up">Học viên nói gì về chúng tôi</h2>
-            
             <div class="row">
-                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
                     <div class="testimonial-card">
-                        <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Testimonial" class="testimonial-img">
-                        <div class="testimonial-body text-center">
-                            <p>"VietEnglish đã giúp tôi nâng cao khả năng tiếng Anh từ A1 lên B2 chỉ trong 6 tháng. Trợ lý AI rất hữu ích và luôn sẵn sàng giải đáp thắc mắc của tôi."</p>
-                            <h5 class="mt-3">Nguyễn Thị Minh</h5>
-                            <div class="text-warning">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
+                        <p class="testimonial-text">AI English Learning đã thay đổi hoàn toàn cách tôi học tiếng Anh. Hệ thống thông minh giúp tôi nhận ra những điểm yếu và tạo ra các bài học phù hợp. Chỉ sau 3 tháng, trình độ của tôi đã tăng từ A2 lên B2.</p>
+                        <div class="testimonial-author">
+                            <img src="{{ url_for('static', filename='images/testimonial-1.jpg') }}" alt="Testimonial Author" class="testimonial-author-img">
+                            <div>
+                                <div class="testimonial-author-name">Nguyễn Văn A</div>
+                                <div class="testimonial-author-position">Nhân viên văn phòng</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
                     <div class="testimonial-card">
-                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Testimonial" class="testimonial-img">
-                        <div class="testimonial-body text-center">
-                            <p>"Tôi đã thử nhiều ứng dụng học tiếng Anh khác nhưng VietEnglish là tốt nhất. Lộ trình học được cá nhân hóa giúp tôi tiến bộ nhanh hơn nhiều so với các phương pháp khác."</p>
-                            <h5 class="mt-3">Trần Văn Hùng</h5>
-                            <div class="text-warning">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
+                        <p class="testimonial-text">Tôi đã thử nhiều phương pháp học tiếng Anh khác nhau nhưng không có phương pháp nào hiệu quả như AI English Learning. Tính năng nhận diện giọng nói và đánh giá phát âm giúp tôi tự tin hơn rất nhiều khi giao tiếp.</p>
+                        <div class="testimonial-author">
+                            <img src="{{ url_for('static', filename='images/testimonial-2.jpg') }}" alt="Testimonial Author" class="testimonial-author-img">
+                            <div>
+                                <div class="testimonial-author-name">Trần Thị B</div>
+                                <div class="testimonial-author-position">Sinh viên</div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
                     <div class="testimonial-card">
-                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Testimonial" class="testimonial-img">
-                        <div class="testimonial-body text-center">
-                            <p>"Tôi đã đạt 7.5 IELTS sau 3 tháng học tập với VietEnglish. Các bài tập phát âm và nghe hiểu đặc biệt hữu ích. Tôi thực sự khuyên bạn nên thử nền tảng này!"</p>
-                            <h5 class="mt-3">Lê Thu Trang</h5>
-                            <div class="text-warning">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
+                        <p class="testimonial-text">Là một người bận rộn, tôi rất khó sắp xếp thời gian học tiếng Anh. Nhưng với AI English Learning, tôi có thể học mọi lúc mọi nơi. Hệ thống phản hồi thông minh và gợi ý cải thiện rất chính xác và hữu ích.</p>
+                        <div class="testimonial-author">
+                            <img src="{{ url_for('static', filename='images/testimonial-3.jpg') }}" alt="Testimonial Author" class="testimonial-author-img">
+                            <div>
+                                <div class="testimonial-author-name">Lê Văn C</div>
+                                <div class="testimonial-author-position">Doanh nhân</div>
                             </div>
                         </div>
                     </div>
@@ -748,101 +730,17 @@
         </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section id="pricing" class="py-5">
-        <div class="container">
-            <h2 class="section-title" data-aos="fade-up">Gói học phù hợp với bạn</h2>
-            
-            <div class="row">
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="pricing-card h-100">
-                        <div class="pricing-header">
-                            <h3>Cơ bản</h3>
-                            <p class="pricing-price">Miễn phí</p>
-                            <small>Trải nghiệm học tiếng Anh cơ bản</small>
-                        </div>
-                        <div class="card-body d-flex flex-column">
-                            <ul class="pricing-features">
-                                <li><i class="fas fa-check"></i> Bài kiểm tra xếp loại</li>
-                                <li><i class="fas fa-check"></i> 5 bài học mỗi tháng</li>
-                                <li><i class="fas fa-check"></i> Truy cập diễn đàn</li>
-                                <li><i class="fas fa-check"></i> Hỗ trợ cơ bản</li>
-                                <li class="text-muted"><i class="fas fa-times"></i> Trợ lý AI</li>
-                                <li class="text-muted"><i class="fas fa-times"></i> Lớp học trực tuyến</li>
-                                <li class="text-muted"><i class="fas fa-times"></i> Chứng chỉ hoàn thành</li>
-                            </ul>
-                            <div class="mt-auto">
-                                <a href="{{ url_for('register') }}" class="btn btn-outline-primary d-block">Đăng ký miễn phí</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="pricing-card h-100">
-                        <div class="pricing-header pricing-popular">
-                            <span class="badge bg-white text-primary mb-2">Phổ biến nhất</span>
-                            <h3>Tiêu chuẩn</h3>
-                            <p class="pricing-price">199.000đ</p>
-                            <small>mỗi tháng</small>
-                        </div>
-                        <div class="card-body d-flex flex-column">
-                            <ul class="pricing-features">
-                                <li><i class="fas fa-check"></i> Tất cả tính năng Cơ bản</li>
-                                <li><i class="fas fa-check"></i> Không giới hạn bài học</li>
-                                <li><i class="fas fa-check"></i> Trợ lý AI 24/7</li>
-                                <li><i class="fas fa-check"></i> 5 lớp học trực tuyến mỗi tháng</li>
-                                <li><i class="fas fa-check"></i> Chứng chỉ hoàn thành</li>
-                                <li><i class="fas fa-check"></i> Đánh giá tiến độ hàng tháng</li>
-                                <li class="text-muted"><i class="fas fa-times"></i> Hỗ trợ 1-1 với giáo viên</li>
-                            </ul>
-                            <div class="mt-auto">
-                                <a href="{{ url_for('register') }}" class="btn btn-warning d-block">Đăng ký ngay</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
-                    <div class="pricing-card h-100">
-                        <div class="pricing-header">
-                            <h3>Cao cấp</h3>
-                            <p class="pricing-price">499.000đ</p>
-                            <small>mỗi tháng</small>
-                        </div>
-                        <div class="card-body d-flex flex-column">
-                            <ul class="pricing-features">
-                                <li><i class="fas fa-check"></i> Tất cả tính năng Tiêu chuẩn</li>
-                                <li><i class="fas fa-check"></i> Không giới hạn lớp học trực tuyến</li>
-                                <li><i class="fas fa-check"></i> Hỗ trợ 1-1 với giáo viên</li>
-                                <li><i class="fas fa-check"></i> Khóa học chuyên biệt (IELTS, TOEIC)</li>
-                                <li><i class="fas fa-check"></i> Luyện phỏng vấn tiếng Anh</li>
-                                <li><i class="fas fa-check"></i> Đánh giá tiến độ hàng tuần</li>
-                                <li><i class="fas fa-check"></i> Giáo trình cao cấp</li>
-                            </ul>
-                            <div class="mt-auto">
-                                <a href="{{ url_for('register') }}" class="btn btn-outline-primary d-block">Đăng ký ngay</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Call to Action Section -->
+    <!-- CTA Section -->
     <section class="cta-section">
         <div class="container">
-            <div class="cta-content" data-aos="fade-up">
-                <h2 class="display-4 fw-bold mb-4">Sẵn sàng bắt đầu hành trình?</h2>
-                <p class="lead mb-4">Đăng ký ngay hôm nay và bắt đầu hành trình học tiếng Anh của bạn với VietEnglish!</p>
-                <div class="d-flex flex-wrap justify-content-center gap-3">
-                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
-                        <i class="fas fa-user-plus me-2"></i>Đăng ký ngay
-                    </a>
-                    <a href="#features" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-info-circle me-2"></i>Tìm hiểu thêm
-                    </a>
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center" data-aos="zoom-in">
+                    <h2 class="cta-title">Bắt đầu hành trình học tiếng Anh ngay hôm nay</h2>
+                    <p class="cta-text">Trải nghiệm phương pháp học tiếng Anh thông minh cùng AI và đạt được mục tiêu ngôn ngữ của bạn nhanh hơn.</p>
+                    <div class="d-flex justify-content-center">
+                        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg me-3">Đăng ký miễn phí</a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Đăng nhập</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -852,140 +750,83 @@
     <footer>
         <div class="container">
             <div class="row">
-                <div class="col-md-4 mb-4">
-                    <a href="{{ url_for('index') }}" class="footer-logo text-white text-decoration-none">
-                        <i class="fas fa-graduation-cap me-2"></i>VietEnglish
+                <div class="col-lg-4 mb-5 mb-lg-0">
+                    <a href="{{ url_for('index') }}" class="footer-brand">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        AI English Learning
                     </a>
-                    <p class="text-muted">Nền tảng học tiếng Anh thông minh với trợ lý AI, giúp bạn học hiệu quả và tiến bộ nhanh chóng.</p>
-                    <div class="footer-social mt-3">
+                    <p class="footer-text">Nền tảng học tiếng Anh thông minh sử dụng công nghệ AI giúp bạn đạt được mục tiêu ngôn ngữ nhanh chóng và hiệu quả nhất.</p>
+                    <div class="social-links">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-twitter"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
                         <a href="#"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
-                
-                <div class="col-md-2 mb-4 footer-links">
-                    <h5>Liên kết</h5>
-                    <ul>
-                        <li><a href="{{ url_for('index') }}">Trang chủ</a></li>
+                <div class="col-lg-2 col-md-4 mb-5 mb-md-0 footer-section">
+                    <h5>Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="#hero">Trang chủ</a></li>
                         <li><a href="#features">Tính năng</a></li>
-                        <li><a href="#how-it-works">Cách học</a></li>
-                        <li><a href="#pricing">Gói học</a></li>
+                        <li><a href="#about">Giới thiệu</a></li>
+                        <li><a href="#courses">Khóa học</a></li>
                         <li><a href="#testimonials">Đánh giá</a></li>
                     </ul>
                 </div>
-                
-                <div class="col-md-2 mb-4 footer-links">
-                    <h5>Hỗ trợ</h5>
-                    <ul>
-                        <li><a href="#">Trung tâm hỗ trợ</a></li>
-                        <li><a href="#">Câu hỏi thường gặp</a></li>
-                        <li><a href="#">Liên hệ</a></li>
-                        <li><a href="#">Chính sách bảo mật</a></li>
-                        <li><a href="#">Điều khoản sử dụng</a></li>
+                <div class="col-lg-2 col-md-4 mb-5 mb-md-0 footer-section">
+                    <h5>Khóa học</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Tiếng Anh cơ bản</a></li>
+                        <li><a href="#">Tiếng Anh giao tiếp</a></li>
+                        <li><a href="#">Tiếng Anh thương mại</a></li>
+                        <li><a href="#">Tiếng Anh học thuật</a></li>
+                        <li><a href="#">Luyện thi IELTS/TOEFL</a></li>
                     </ul>
                 </div>
-                
-                <div class="col-md-4 mb-4 footer-links">
+                <div class="col-lg-4 col-md-4 footer-section">
                     <h5>Liên hệ</h5>
-                    <p><i class="fas fa-map-marker-alt me-2"></i> 123 Đường ABC, Quận XYZ, TP.HCM</p>
-                    <p><i class="fas fa-phone me-2"></i> (0123) 456 789</p>
-                    <p><i class="fas fa-envelope me-2"></i> support@vietenglish.com</p>
-                    <div class="mt-3">
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt me-2"></i> 123 Đường ABC, Quận XYZ, TP. HCM</li>
+                        <li><i class="fas fa-phone me-2"></i> (+84) 123 456 789</li>
+                        <li><i class="fas fa-envelope me-2"></i> info@aienglishlearning.com</li>
+                    </ul>
+                    <div class="mt-4">
                         <form>
-                            <div class="input-group mb-3">
-                                <input type="email" class="form-control" placeholder="Đăng ký nhận tin" aria-label="Email address">
-                                <button class="btn btn-primary" type="button">Đăng ký</button>
+                            <div class="input-group">
+                                <input type="email" class="form-control" placeholder="Nhập email của bạn" aria-label="Email" aria-describedby="button-addon2">
+                                <button class="btn btn-primary" type="button" id="button-addon2">Đăng ký</button>
                             </div>
+                            <small class="text-muted mt-2 d-block">Nhận thông tin về khóa học mới và khuyến mãi</small>
                         </form>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="copyright">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6 text-center text-md-start">
-                        <p class="mb-0">&copy; {{ current_year }} VietEnglish. Bản quyền thuộc về công ty TNHH VietEnglish.</p>
-                    </div>
-                    <div class="col-md-6 text-center text-md-end">
-                        <p class="mb-0">Thiết kế bởi <a href="#" class="text-white">Dev Team</a></p>
-                    </div>
-                </div>
+            <div class="copyright">
+                <p>&copy; {{ current_year }} AI English Learning. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
-    <a href="#" class="back-to-top" id="backToTop">
-        <i class="fas fa-chevron-up"></i>
-    </a>
-
-    <!-- Bootstrap 5 JS Bundle -->
+    <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- AOS Animation JS -->
+    <!-- AOS Animation Library -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     
-    <!-- Custom JS -->
+    <!-- Initialize AOS -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize AOS animation
-            AOS.init({
-                duration: 1000,
-                once: true
-            });
-            
-            // Smooth scroll for anchor links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    const targetId = this.getAttribute('href');
-                    if (targetId === '#') return;
-                    
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        window.scrollTo({
-                            top: targetElement.offsetTop - 70,
-                            behavior: 'smooth'
-                        });
-                    }
-                });
-            });
-            
-            // Sticky navbar on scroll
-            const navbar = document.querySelector('.navbar');
-            const navbarHeight = navbar.offsetHeight;
-            
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > navbarHeight) {
-                    navbar.classList.add('sticky');
-                } else {
-                    navbar.classList.remove('sticky');
-                }
-            });
-            
-            // Back to top button
-            const backToTopButton = document.getElementById('backToTop');
-            
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > 300) {
-                    backToTopButton.classList.add('show');
-                } else {
-                    backToTopButton.classList.remove('show');
-                }
-            });
-            
-            backToTopButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            });
+        AOS.init({
+            once: true
+        });
+        
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('mainNav');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
         });
     </script>
 </body>

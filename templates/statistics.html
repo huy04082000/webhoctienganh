@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}Thống kê học tập - AI English Learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Thống kê học tập</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" onclick="window.print()">
+            <i class="fas fa-download fa-sm text-white-50 me-2"></i>Xuất báo cáo
+        </a>
+    </div>
+    
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Total Study Time Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Tổng thời gian học
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_study_time }} phút
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Completed Exercises Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Bài tập đã hoàn thành
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_exercises }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Completed Tests Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Bài kiểm tra đã hoàn thành
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_tests }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Points Card -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Tổng điểm
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_points }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Weekly Activity Chart -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Hoạt động 7 ngày qua</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="weeklyActivityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Level Progress -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Tiến độ cấp độ</h6>
+                </div>
+                <div class="card-body">
+                    {% set profile = current_user.profile %}
+                    {% if profile and profile.language_level %}
+                        <h4 class="small font-weight-bold mb-4">Trình độ hiện tại: 
+                            <span class="badge text-white 
+                                {% if profile.language_level == 'Beginner (A1)' %}badge-a1
+                                {% elif profile.language_level == 'Elementary (A2)' %}badge-a2
+                                {% elif profile.language_level == 'Intermediate (B1)' %}badge-b1
+                                {% elif profile.language_level == 'Upper Intermediate (B2)' %}badge-b2
+                                {% elif profile.language_level == 'Advanced (C1)' %}badge-c1
+                                {% elif profile.language_level == 'Proficient (C2)' %}badge-c2
+                                {% endif %}">
+                                {{ profile.language_level }}
+                            </span>
+                        </h4>
+                        
+                        <!-- Level progression visualization -->
+                        <div class="level-progress mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="badge badge-a1">A1</span>
+                                <span class="badge badge-a2">A2</span>
+                                <span class="badge badge-b1">B1</span>
+                                <span class="badge badge-b2">B2</span>
+                                <span class="badge badge-c1">C1</span>
+                                <span class="badge badge-c2">C2</span>
+                            </div>
+                            <div class="progress" style="height: 15px">
+                                {% set progress_values = {
+                                    'Beginner (A1)': 16.7,
+                                    'Elementary (A2)': 33.4,
+                                    'Intermediate (B1)': 50.1,
+                                    'Upper Intermediate (B2)': 66.8,
+                                    'Advanced (C1)': 83.5,
+                                    'Proficient (C2)': 100
+                                } %}
+                                {% set progress = progress_values[profile.language_level]|default(0) %}
+                                
+                                <div class="progress-bar bg-gradient-primary" role="progressbar" style="width: {{ progress }}%"
+                                    aria-valuenow="{{ progress|round|int }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="mb-0">Bạn chưa thực hiện bài test xếp loại</p>
+                            <a href="{{ url_for('placement_test') }}" class="btn btn-primary mt-3">Kiểm tra ngay</a>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Recent Test Results -->
+                    <div class="mt-4">
+                        <h6 class="font-weight-bold">Kết quả kiểm tra gần đây</h6>
+                        {% if recent_tests %}
+                            <div class="list-group list-group-flush">
+                                {% for test_result in recent_tests %}
+                                    <div class="list-group-item px-0">
+                                        <div class="d-flex justify-content-between">
+                                            <div>{{ test_result.test.title }}</div>
+                                            <div class="font-weight-bold 
+                                                {% if test_result.score >= 8 %}text-success
+                                                {% elif test_result.score >= 6 %}text-primary
+                                                {% else %}text-danger
+                                                {% endif %}">
+                                                {{ test_result.score|round(1) }}/10
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <small class="text-muted">{{ test_result.completed_at.strftime('%d/%m/%Y') }}</small>
+                                            <span class="badge text-white 
+                                                {% if test_result.level_result == 'Beginner (A1)' %}badge-a1
+                                                {% elif test_result.level_result == 'Elementary (A2)' %}badge-a2
+                                                {% elif test_result.level_result == 'Intermediate (B1)' %}badge-b1
+                                                {% elif test_result.level_result == 'Upper Intermediate (B2)' %}badge-b2
+                                                {% elif test_result.level_result == 'Advanced (C1)' %}badge-c1
+                                                {% elif test_result.level_result == 'Proficient (C2)' %}badge-c2
+                                                {% endif %}">
+                                                {{ test_result.level_result }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-center text-muted">Không có dữ liệu</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Daily Activity Stats -->
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Thống kê hoạt động hàng ngày</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dailyStatsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Ngày</th>
+                                    <th>Thời gian học</th>
+                                    <th>Bài tập hoàn thành</th>
+                                    <th>Bài kiểm tra hoàn thành</th>
+                                    <th>Điểm đạt được</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if stats %}
+                                    {% for stat in stats %}
+                                        <tr>
+                                            <td>{{ stat.date.strftime('%d/%m/%Y') }}</td>
+                                            <td>{{ stat.study_time }} phút</td>
+                                            <td>{{ stat.exercises_completed }}</td>
+                                            <td>{{ stat.tests_completed }}</td>
+                                            <td>{{ stat.points_earned }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">Không có dữ liệu</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Set new default font family and font color to mimic Bootstrap's default styling
+    Chart.defaults.font.family = 'Nunito, "Segoe UI", Roboto, Arial, sans-serif';
+    Chart.defaults.color = '#858796';
+    
+    // Weekly Activity Chart
+    var ctx = document.getElementById("weeklyActivityChart").getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for stat in stats %}
+                    "{{ stat.date.strftime('%d/%m') }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: "Thời gian học (phút)",
+                backgroundColor: "#4e73df",
+                data: [
+                    {% for stat in stats %}
+                        {{ stat.study_time }},
+                    {% endfor %}
+                ],
+            },
+            {
+                label: "Điểm đạt được",
+                backgroundColor: "#1cc88a",
+                data: [
+                    {% for stat in stats %}
+                        {{ stat.points_earned }},
+                    {% endfor %}
+                ],
+            }],
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

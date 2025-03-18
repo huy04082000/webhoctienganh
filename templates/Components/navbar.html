@@ -1,0 +1,70 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container-fluid">
+        <button class="btn btn-link" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <a class="navbar-brand d-flex align-items-center justify-content-center" href="{{ url_for('dashboard') }}">
+            <i class="fas fa-graduation-cap me-2"></i>
+            <span>AI English Learning</span>
+        </a>
+        
+        <ul class="navbar-nav ms-auto">
+            <!-- Notifications Dropdown -->
+            <li class="nav-item dropdown notification-dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-bell fa-fw"></i>
+                    {% if get_unread_notifications_count() > 0 %}
+                        <span class="badge rounded-pill bg-danger">{{ get_unread_notifications_count() }}</span>
+                    {% endif %}
+                </a>
+                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="notificationDropdown">
+                    <h6 class="dropdown-header">
+                        Thông báo
+                    </h6>
+                    {% set notifications = get_recent_notifications() if get_recent_notifications is defined else [] %}
+                    {% if notifications %}
+                        {% for notification in notifications %}
+                            {% include 'components/notification_item.html' %}
+                        {% endfor %}
+                        <a class="dropdown-item text-center small text-gray-500" href="{{ url_for('notifications') }}">Xem tất cả thông báo</a>
+                    {% else %}
+                        <div class="dropdown-item text-center small text-gray-500">Không có thông báo mới</div>
+                    {% endif %}
+                </div>
+            </li>
+            
+            <!-- Divider -->
+            <li class="nav-item">
+                <div class="topbar-divider d-none d-sm-block"></div>
+            </li>
+            
+            <!-- User Dropdown -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="d-none d-lg-inline text-gray-600 small me-2">{{ current_user.fullname }}</span>
+                    <img class="img-profile rounded-circle" src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" width="32" height="32">
+                </a>
+                <div class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="{{ url_for('profile') }}">
+                        <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>
+                        Hồ sơ
+                    </a>
+                    <a class="dropdown-item" href="{{ url_for('statistics') }}">
+                        <i class="fas fa-chart-line fa-sm fa-fw me-2 text-gray-400"></i>
+                        Thống kê
+                    </a>
+                    <a class="dropdown-item" href="{{ url_for('badges') }}">
+                        <i class="fas fa-award fa-sm fa-fw me-2 text-gray-400"></i>
+                        Huy hiệu
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{{ url_for('logout') }}">
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
+                        Đăng xuất
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>

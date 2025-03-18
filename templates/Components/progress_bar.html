@@ -1,0 +1,12 @@
+<div class="progress-wrapper">
+    <div class="d-flex justify-content-between mb-1">
+        <small class="text-muted">{{ label }}</small>
+        <small class="text-muted">{{ value|round|int }}%</small>
+    </div>
+    <div class="progress" style="height: 8px;">
+        <div class="progress-bar bg-{{ color|default('primary') }}" role="progressbar" 
+            style="width: {{ value }}%" aria-valuenow="{{ value|round|int }}" 
+            aria-valuemin="0" aria-valuemax="100">
+        </div>
+    </div>
+</div>
